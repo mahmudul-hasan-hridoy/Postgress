@@ -23,17 +23,19 @@ export default function Navbar() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (token) {
-          const res = await fetch("/api/user/profile", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (res.ok) {
-            const userData = await res.json();
-            setUser(userData);
-            setIsLoggedIn(true);
+        if (typeof window !== "undefined") {
+          const token = localStorage.getItem("token");
+          if (token) {
+            const res = await fetch("/api/user/profile", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            if (res.ok) {
+              const userData = await res.json();
+              setUser(userData);
+              setIsLoggedIn(true);
+            }
           }
         }
       } catch (error) {
@@ -41,10 +43,12 @@ export default function Navbar() {
       }
     };
     fetchUserData();
-  }, []);
+  }, [typeof window !== "undefined" && localStorage.getItem("token")]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+    }
     setUser(null);
     setIsLoggedIn(false);
     router.push("/auth/login");

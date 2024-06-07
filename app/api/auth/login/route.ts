@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
     if (!isPasswordValid) {
       return NextResponse.json(
-        { message: "Invalid email or password" },
+        { message: "Invalid password" },
         { status: 401 },
       );
     }

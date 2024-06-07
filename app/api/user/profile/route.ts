@@ -15,13 +15,11 @@ export async function GET(request: Request) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
-    console.log("Decoded userId:", userId);
 
     // Assuming the id column is a string data type
     const query = "SELECT username, email, avatar_url FROM users WHERE id = $1";
     const values = [userId];
     const { rows } = await pool.query(query, values);
-    console.log("Query result:", rows);
 
     if (rows.length === 0) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });

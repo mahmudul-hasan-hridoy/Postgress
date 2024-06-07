@@ -34,7 +34,7 @@ export default function LoginPage() {
         router.push("/dashboard");
       } else {
         const error = await res.text();
-        toast.error(error);
+        toast.error(error.message);
       }
     } catch (error) {
       console.error("Error logging in:", error);
