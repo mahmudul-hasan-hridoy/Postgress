@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { FaUserCircle } from "react-icons/fa";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -35,45 +36,58 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center">
-        Loading...
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner"></div>
+          <p className="mt-4">Loading...</p>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center">
-        You are not authorized to access this page.
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <FaUserCircle className="mx-auto text-6xl text-gray-400" />
+          <p className="mt-4">You are not authorized to access this page.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
-      <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
-        <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">Welcome to the Dashboard</h1>
-        </div>
-        <div className="space-y-4">
-          <div className="flex justify-center">
-            <img
-              src={user.avatarUrl}
-              alt="Profile Picture"
-              className="w-32 h-32 rounded-full"
-            />
+    <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
+      <main className="flex-1 p-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-lg shadow-md p-6 dark:bg-gray-800">
+            <div className="flex items-center mb-6">
+              <img
+                src={user.avatarUrl}
+                alt="Profile Picture"
+                className="w-16 h-16 rounded-full mr-4"
+              />
+              <div>
+                <h2 className="text-2xl font-semibold">{user.username}</h2>
+                <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">User Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">Username</p>
+                  <p className="text-lg font-medium">{user.username}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">Email</p>
+                  <p className="text-lg font-medium">{user.email}</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="space-y-1">
-            <h2 className="text-lg font-semibold">User Information</h2>
-            <p>
-              <span className="font-medium">Username:</span> {user.username}
-            </p>
-            <p>
-              <span className="font-medium">Email:</span> {user.email}
-            </p>
-          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

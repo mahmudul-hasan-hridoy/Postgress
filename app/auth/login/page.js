@@ -32,7 +32,7 @@ export default function Login() {
           const { token } = userData;
           localStorage.setItem("token", token);
           toast.success("Login successful!");
-          router.push("/");
+          router.push("/dashboard");
         } else {
           // User's email is not verified
           toast.error("Please verify your email address before logging in.");
@@ -89,7 +89,7 @@ export default function Login() {
           Don't have an account?
           <Link
             className="ml-1 font-medium underline underline-offset-2"
-            href="/auth/register"
+            href="/auth/signup"
           >
             Sign up
           </Link>

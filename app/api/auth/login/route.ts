@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       expiresIn: "7d",
     });
 
-    return NextResponse.json({ token });
+    return NextResponse.json({ token, email_verified: user.email_verified });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
