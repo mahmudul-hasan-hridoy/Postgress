@@ -52,8 +52,7 @@ export default function Signup() {
       });
       if (res.ok) {
         const { userId } = await res.json();
-        toast.success("Sign-up successful!");
-        router.push("/auth/login");
+        toast.success("Sign-up successful!. Now Verify Your email");
       } else {
         const error = await res.text();
         toast.error(error);
