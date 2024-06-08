@@ -14,14 +14,16 @@ function generateVerificationToken() {
   return crypto.randomBytes(32).toString("hex");
 }
 
-async function sendVerificationEmail(email, verificationToken) {
-  const verificationLink = `${process.env.SITE_URL}/verify?token=${verificationToken}`;
+async function sendVerificationEmail(username, email, verificationToken) {
+  const verificationLink = `${process.env.SITE_URL}/api/auth/verify?token=${verificationToken}`;
   const emailSubject = "Verify your email address";
   const emailHtml = `
-    <p>Hello,</p>
-    <p>Please click the following link to verify your email address:</p>
-    <a href="${verificationLink}">${verificationLink}</a>
-    <p>If you didn't sign up for our service, you can ignore this email.</p>
+    <p>Dear ${username}</p>
+    <p>Thank you for registering with our service. To complete your registration, please verify your email address by clicking the link below:</p>
+    <p><a href="${verificationLink}">Verify Your Email</a></p>
+    <p>If you did not create an account, no further action is required.</p>
+    <p>Best regards,</p>
+    <p>The Vercel Team</p>
   `;
 
   try {
@@ -81,14 +83,20 @@ export async function GET(request: NextRequest) {
 
       const userId = rows[0].id;
       console.log("User signed up successfully:", userId);
-
+      NextResponse.redirect(
+        "/auth/register?message=Successfully sign up with Google",
+      );
       // Send verification email
-      await sendVerificationEmail(userData.email, userData.verificationToken);
+      await sendVerificationEmail(
+        userData.username,
+        userData.email,
+        userData.verificationToken,
+      );
     }
   } catch (error) {
     console.error("Error signing up with Google:", error);
-    // Handle error cases
+    NextResponse.redirect(
+      "/auth/register?message=Failed to sign up with Google",
+    );
   }
-
-  return NextResponse.redirect(`${process.env.SITE_URL}/auth/login`);
 }
