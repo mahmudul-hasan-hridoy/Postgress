@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,20 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const success = queryParams.get("success");
+    const error = queryParams.get("error");
+
+    if (success === "signedUpWithGoogle") {
+      toast.success("Sign-up successful! Please verify your email.");
+    } else if (error === "signUpFailed") {
+      toast.error("Error signing up with Google. Please try again.");
+    } else if (error === "missingCode") {
+      toast.error("Missing code parameter. Unable to complete Google Sign-Up.");
+    }
+  }, []);
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -67,7 +81,7 @@ export default function Signup() {
   };
 
   const handleGoogleSignUp = () => {
-    window.location.href = '/api/auth/google';
+    window.location.href = "/api/auth/google";
   };
 
   return (

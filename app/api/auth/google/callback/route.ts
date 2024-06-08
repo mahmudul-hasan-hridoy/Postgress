@@ -34,11 +34,13 @@ async function sendVerificationEmail(username, email, verificationToken) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export const GET = async (request: NextRequest) => {
   const code = request.nextUrl.searchParams.get("code");
 
   if (!code) {
-    return NextResponse.error();
+    return NextResponse.redirect(
+      `${process.env.SITE_URL}/auth/register?error=missingCode`,
+    );
   }
 
   try {
@@ -83,20 +85,24 @@ export async function GET(request: NextRequest) {
 
       const userId = rows[0].id;
       console.log("User signed up successfully:", userId);
-      NextResponse.redirect(
-        "/auth/register?message=Successfully sign up with Google",
-      );
+
       // Send verification email
       await sendVerificationEmail(
         userData.username,
         userData.email,
         userData.verificationToken,
       );
+
+      return NextResponse.redirect(
+        `${process.env.SITE_URL}/auth/register?success=signedUpWithGoogle`,
+      );
     }
   } catch (error) {
     console.error("Error signing up with Google:", error);
-    NextResponse.redirect(
-      "/auth/register?message=Failed to sign up with Google",
+    return NextResponse.redirect(
+      `${process.env.SITE_URL}/auth/register?error=signUpFailed`,
     );
   }
-}
+
+  return NextResponse.redirect(`${process.env.SITE_URL}/auth/login`);
+};
