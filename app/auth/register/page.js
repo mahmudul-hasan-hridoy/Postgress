@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
 
 function generateAvatar(username) {
   const canvas = document.createElement("canvas");
@@ -52,7 +53,7 @@ export default function Signup() {
       });
       if (res.ok) {
         const { userId } = await res.json();
-        toast.success("Sign-up successful!. Now Verify Your email");
+        toast.success("Sign-up successful! Now verify your email.");
       } else {
         const error = await res.text();
         toast.error(error);
@@ -65,6 +66,10 @@ export default function Signup() {
     }
   };
 
+  const handleGoogleSignUp = () => {
+    console.log("Google sign-up clicked");
+  };
+
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
@@ -73,6 +78,21 @@ export default function Signup() {
           <p className="text-gray-500 dark:text-gray-400">
             Create your account to get started.
           </p>
+        </div>
+        <div className="space-y-2">
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 font-medium"
+            onClick={handleGoogleSignUp}
+          >
+            <FcGoogle size={24} />
+            Sign Up with Google
+          </Button>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="h-px w-full bg-gray-300 dark:bg-gray-700"></span>
+          <span className="px-4 text-gray-500 dark:text-gray-400">or</span>
+          <span className="h-px w-full bg-gray-300 dark:bg-gray-700"></span>
         </div>
         <form className="space-y-4" onSubmit={handleSignUp}>
           <div className="space-y-2">
@@ -112,6 +132,7 @@ export default function Signup() {
             {loading ? <Loader2 className="animate-spin" /> : "Sign Up"}
           </Button>
         </form>
+
         <div className="text-center text-sm text-gray-500 dark:text-gray-400">
           Already have an account?
           <Link
