@@ -27,7 +27,8 @@ export default function Layout({ children }) {
       suppressHydrationWarning
       className={cn(inter.variable, lora.variable, "scroll-smooth")}
     >
-      <body className="bg-background overflow-x-hidden font-sans antialiased">
+      <script src="https://apis.google.com/js/platform.js" async defer></script>
+      <body className="mx-auto max-w-screen-lg overflow-x-hidden bg-background font-sans antialiased">
         <Toaster closeButton expand={false} richColors position="top-center" />
         <Navbar />
         {children}
