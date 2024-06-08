@@ -67,7 +67,7 @@ export default function Signup() {
   };
 
   const handleGoogleSignUp = () => {
-    console.log("Google sign-up clicked");
+    window.location.href = '/api/auth/google';
   };
 
   return (
