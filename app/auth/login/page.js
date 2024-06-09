@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
@@ -51,7 +51,7 @@ export default function Login() {
     }
   };
 
-  const handleGoogleSignUp = async () => {
+  const handleGoogleLogin = async () => {
     try {
       const googleAuthUrl = await getGoogleAuthUrl();
       window.location.href = googleAuthUrl;
@@ -63,6 +63,19 @@ export default function Login() {
       );
     }
   };
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const status = url.searchParams.get("status");
+    const message = url.searchParams.get("message");
+    const token = url.searchParams.get("token");
+
+    if (status === "success" && message === "loginWithGoogle" && token) {
+      localStorage.setItem("token", token);
+      toast.success("You have successfully logged in with Google.");
+    }
+    
+  }, []);
 
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
@@ -77,7 +90,7 @@ export default function Login() {
           <Button
             variant="outline"
             className="w-full flex items-center justify-center gap-2 font-medium"
-            onClick={handleGoogleSignUp}
+            onClick={handleGoogleLogin}
           >
             <FcGoogle size={24} />
             Continue with Google

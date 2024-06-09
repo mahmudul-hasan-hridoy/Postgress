@@ -16,7 +16,7 @@ export async function PUT(request: Request) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    const { username, email, avatarUrl } = await request.json();
+    const { name, email, avatarUrl } = await request.json();
 
     const query =
       "UPDATE users SET name = $1, email = $2, avatar_url = $3 WHERE id = $4 RETURNING id";

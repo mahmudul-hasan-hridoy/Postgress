@@ -1,36 +1,42 @@
-// api/auth/google/callback/route.ts
+// app/auth/google/route.js
 import { getGoogleUser } from "@/lib/google-auth";
 import pool from "@/lib/db";
 import jwt from "jsonwebtoken";
 
-export const GET = async (req) => {
+export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
 
   if (!code) {
-    return new Response(JSON.stringify({ error: "Missing code parameter" }), {
-      status: 400,
-    });
+    return redirectWithMessage("/auth/signup", "error", "missingCode");
   }
 
   try {
     const { email, picture, name } = await getGoogleUser(code);
     let user = await findUserByEmail(email);
+    const token = generateToken(user);
+
     if (!user) {
       user = await createUser(name, email, picture);
+      return redirectWithMessage(
+        "/auth/signup",
+        "success",
+        "signedUpWithGoogle",
+        token,
+      );
+    } else {
+      return redirectWithMessage(
+        "/auth/login",
+        "success",
+        "loginWithGoogle",
+        token,
+      );
     }
-    const token = generateToken(user);
-    return new Response(JSON.stringify({ token }), {
-      status: 200,
-    });
   } catch (error) {
     console.error("Error processing Google user:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to process Google user" }),
-      { status: 500 },
-    );
+    return redirectWithMessage("/auth/signup", "error", "signUpFailed");
   }
-};
+}
 
 const findUserByEmail = async (email) => {
   const client = await pool.connect();
@@ -69,8 +75,22 @@ const generateToken = (user) => {
     email: user.email,
     avatarUrl: user.avatar_url,
   };
-  const secret = process.env.JWT_SECRET; // Ensure this is set in your environment variables
-  const options = { expiresIn: "7d" }; // Token expiration time
-
+  const secret = process.env.JWT_SECRET;
+  const options = { expiresIn: "7d" };
   return jwt.sign(payload, secret, options);
+};
+
+const redirectWithMessage = (url, status, message, token = "") => {
+  const redirectUrl = new URL(url, process.env.SITE_URL);
+  redirectUrl.searchParams.append("status", status);
+  redirectUrl.searchParams.append("message", message);
+  if (token) {
+    redirectUrl.searchParams.append("token", token);
+  }
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: redirectUrl.toString(),
+    },
+  });
 };

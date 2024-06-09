@@ -53,15 +53,18 @@ export default function Signup() {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
-    const success = queryParams.get("success");
-    const error = queryParams.get("error");
+    const status = url.searchParams.get("status");
+    const message = queryParams.get("message");
+    const token = queryParams.get("token");
 
-    if (success === "signedUpWithGoogle") {
+    if (status === "signedUpWithGoogle") {
       toast.success("Sign-up successful! Please verify your email.");
-    } else if (error === "signUpFailed") {
+    } else if (message === "signUpFailed") {
       toast.error("Error signing up with Google. Please try again.");
-    } else if (error === "missingCode") {
+    } else if (message === "missingCode") {
       toast.error("Missing code parameter. Unable to complete Google Sign-Up.");
+    } else if (message === "failedToProcess") {
+      toast.error("Failed to process Google user.");
     }
   }, []);
 
