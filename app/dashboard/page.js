@@ -75,7 +75,9 @@ export default function Dashboard() {
               <h3 className="text-lg font-semibold mb-2">User Information</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-1">Username</p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">
+                    Username
+                  </p>
                   <p className="text-lg font-medium">{user.name}</p>
                 </div>
                 <div>

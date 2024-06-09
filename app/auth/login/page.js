@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { FcGoogle } from "react-icons/fc";
+import { getGoogleAuthUrl } from "@/lib/google-auth";
 
 export default function Login() {
   const router = useRouter();
@@ -49,6 +51,19 @@ export default function Login() {
     }
   };
 
+  const handleGoogleSignUp = async () => {
+    try {
+      const googleAuthUrl = await getGoogleAuthUrl();
+      window.location.href = googleAuthUrl;
+    } catch (error) {
+      console.error("Error getting Google auth URL:", error);
+      toast.error(
+        "An error occurred while signing up with Google.",
+        error.message,
+      );
+    }
+  };
+
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
@@ -57,6 +72,21 @@ export default function Login() {
           <p className="text-gray-500 dark:text-gray-400">
             Log in to your account to continue.
           </p>
+        </div>
+        <div className="space-y-2">
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 font-medium"
+            onClick={handleGoogleSignUp}
+          >
+            <FcGoogle size={24} />
+            Continue with Google
+          </Button>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="h-px w-full bg-gray-300 dark:bg-gray-700"></span>
+          <span className="px-4 text-gray-500 dark:text-gray-400">or</span>
+          <span className="h-px w-full bg-gray-300 dark:bg-gray-700"></span>
         </div>
         <form className="space-y-4" onSubmit={handleLogin}>
           <div className="space-y-2">

@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { getGoogleAuthUrl } from "@/lib/google-auth";
 
-function generateAvatar(username) {
+function generateAvatar(name) {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   const size = 128;
