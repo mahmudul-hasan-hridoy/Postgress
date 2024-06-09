@@ -2,29 +2,37 @@
 import { getGoogleUser } from "@/lib/google-auth";
 import pool from "@/lib/db";
 import jwt from "jsonwebtoken";
+import sendVerificationEmail from "@/lib/sendVerificationEmail";
+import { v4 as uuidv4 } from "uuid";
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
 
   if (!code) {
-    return redirectWithMessage("/auth/signup", "error", "missingCode");
+    return new Response(JSON.stringify({ error: "Missing code parameter" }), {
+      status: 400,
+    });
   }
 
   try {
     const { email, picture, name } = await getGoogleUser(code);
     let user = await findUserByEmail(email);
-    const token = generateToken(user);
 
     if (!user) {
-      user = await createUser(name, email, picture);
+      const verificationToken = uuidv4();
+      user = await createUser(name, email, picture, verificationToken);
+      await sendVerificationEmail(email, verificationToken);
+
+      const token = generateToken(user);
       return redirectWithMessage(
-        "/auth/signup",
+        "/auth/register",
         "success",
         "signedUpWithGoogle",
         token,
       );
     } else {
+      const token = generateToken(user);
       return redirectWithMessage(
         "/auth/login",
         "success",
@@ -34,7 +42,7 @@ export async function GET(req) {
     }
   } catch (error) {
     console.error("Error processing Google user:", error);
-    return redirectWithMessage("/auth/signup", "error", "signUpFailed");
+    return redirectWithMessage("/auth/register", "error", "signUpFailed");
   }
 }
 
@@ -51,14 +59,21 @@ const findUserByEmail = async (email) => {
   }
 };
 
-const createUser = async (name, email, avatarUrl) => {
+const createUser = async (name, email, avatarUrl, verificationToken) => {
   const client = await pool.connect();
   const query = `
-    INSERT INTO users (name, email, avatar_url, created_at, updated_at) 
-    VALUES ($1, $2, $3, $4, $5) 
+    INSERT INTO users (name, email, avatar_url, verification_token, created_at, updated_at) 
+    VALUES ($1, $2, $3, $4, $5, $6) 
     RETURNING id, name, email, avatar_url
   `;
-  const values = [name, email, avatarUrl, new Date(), new Date()];
+  const values = [
+    name,
+    email,
+    avatarUrl,
+    verificationToken,
+    new Date(),
+    new Date(),
+  ];
 
   try {
     const result = await client.query(query, values);

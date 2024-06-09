@@ -1,4 +1,4 @@
-// api/auth/google/route.ts
+ // api/auth/google/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 

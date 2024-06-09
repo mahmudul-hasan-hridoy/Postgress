@@ -16,6 +16,13 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/dashboard");
+    }
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -74,7 +81,7 @@ export default function Login() {
       localStorage.setItem("token", token);
       toast.success("You have successfully logged in with Google.");
     }
-    
+    router.push("/dashboard");
   }, []);
 
   return (

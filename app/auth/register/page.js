@@ -52,22 +52,12 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
-    const status = url.searchParams.get("status");
-    const message = queryParams.get("message");
-    const token = queryParams.get("token");
-
-    if (status === "signedUpWithGoogle") {
-      toast.success("Sign-up successful! Please verify your email.");
-    } else if (message === "signUpFailed") {
-      toast.error("Error signing up with Google. Please try again.");
-    } else if (message === "missingCode") {
-      toast.error("Missing code parameter. Unable to complete Google Sign-Up.");
-    } else if (message === "failedToProcess") {
-      toast.error("Failed to process Google user.");
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/dashboard");
     }
   }, []);
-
+  
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -109,6 +99,25 @@ export default function Signup() {
       );
     }
   };
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const status = url.searchParams.get("status");
+    const message = url.searchParams.get("message");
+    const token = url.searchParams.get("token");
+
+    if (status === "success" && message === "loginWithGoogle" && token) {
+      localStorage.setItem("token", token);
+      toast.success("You have successfully Sign up with Google.");
+    } else if (message === "signUpFailed") {
+      toast.error("Error signing up with Google. Please try again.");
+    } else if (message === "missingCode") {
+      toast.error("Missing code parameter. Unable to complete Google Sign-Up.");
+    } else if (message === "failedToProcess") {
+      toast.error("Failed to process Google user.");
+    }
+    router.push("/dashboard");
+  }, []);
 
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">

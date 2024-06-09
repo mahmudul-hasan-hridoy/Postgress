@@ -13,12 +13,12 @@ export async function GET(request: Request) {
 
     // Redirect the user to a success page or the login page
     return NextResponse.redirect(
-      `${process.env.SITE_URL}/auth/login?verified=true`,
+      `${process.env.SITE_URL}/dashboard?verified=true`,
     );
   } catch (error) {
     console.error(error);
     return NextResponse.redirect(
-      `${process.env.SITE_URL}/auth/login?error=verification_failed`,
+      `${process.env.SITE_URL}/dashboard?error=verification_failed`,
     );
   }
 }
