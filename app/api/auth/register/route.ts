@@ -1,8 +1,9 @@
-// api/auth/register/route.ts
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import pool from "@/lib/db";
 import sendVerificationEmail from "@/lib/sendVerificationEmail";
+import { storage } from "@/lib/firebase";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 
 export const POST = async (req) => {
   const { name, email, password, avatarUrl } = await req.json();
@@ -28,13 +29,20 @@ export const POST = async (req) => {
       const hashedPassword = await bcrypt.hash(password, salt);
       const verificationToken = uuidv4();
 
+      // Upload the avatar to Firebase Storage
+      const avatarRef = ref(storage, `avatars/${verificationToken}.png`);
+      const avatarBuffer = Buffer.from(avatarUrl.split(",")[1], "base64");
+      await uploadString(avatarRef, avatarBuffer.toString("base64"), "base64");
+      const storedAvatarUrl = await getDownloadURL(avatarRef);
+      console.log("Stored avatar URL:", storedAvatarUrl);
+
       const query =
         "INSERT INTO users (name, email, password, avatar_url, verification_token, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id";
       const values = [
         name,
         email,
         hashedPassword,
-        avatarUrl,
+        storedAvatarUrl, // Store the Firebase Storage URL
         verificationToken,
         new Date(),
         new Date(),
@@ -44,9 +52,12 @@ export const POST = async (req) => {
 
       await sendVerificationEmail(email, verificationToken);
 
-      return new Response(JSON.stringify({ userId: newUser.id }), {
-        status: 201,
-      });
+      return new Response(
+        JSON.stringify({ userId: newUser.id, avatarUrl: storedAvatarUrl }),
+        {
+          status: 201,
+        },
+      );
     } finally {
       client.release();
     }

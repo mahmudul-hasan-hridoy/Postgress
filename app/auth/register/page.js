@@ -115,7 +115,7 @@ export default function Signup() {
     const message = url.searchParams.get("message");
     const token = url.searchParams.get("token");
 
-    if (status === "success" && message === "loginWithGoogle" && token) {
+    if (status === "success" && message === "signedUpWithGoogle" && token) {
       localStorage.setItem("token", token);
       toast.success("You have successfully Sign up with Google.");
     } else if (message === "signUpFailed") {
