@@ -30,7 +30,7 @@ export default function SettingsPage() {
           if (res.ok) {
             const userData = await res.json();
             setUser(userData);
-            setUsername(userData.name);
+            setName(userData.name);
             setEmail(userData.email);
             setAvatarUrl(userData.avatarUrl);
           } else {
