@@ -14,13 +14,13 @@ export async function PUT(request: Request) {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    const userId = decoded.id;
 
     const { username, email, avatarUrl } = await request.json();
 
     const query =
-      "UPDATE users SET username = $1, email = $2, avatar_url = $3 WHERE id = $4 RETURNING id";
-    const values = [username, email, avatarUrl, userId];
+      "UPDATE users SET name = $1, email = $2, avatar_url = $3 WHERE id = $4 RETURNING id";
+    const values = [name, email, avatarUrl, userId];
 
     const { rows } = await pool.query(query, values);
 

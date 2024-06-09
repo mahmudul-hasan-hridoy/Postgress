@@ -19,10 +19,23 @@ function generateAvatar(name) {
   canvas.width = size;
   canvas.height = size;
 
-  context.fillStyle = "#f0f0f0";
+  const backgroundColors = [
+    "#f0f0f0",
+    "#d32f2f",
+    "#1976d2",
+    "#388e3c",
+    "#fbc02d",
+  ];
+  const textColors = ["#333333", "#ffffff", "#000000"];
+
+  const backgroundColor =
+    backgroundColors[Math.floor(Math.random() * backgroundColors.length)];
+  const textColor = textColors[Math.floor(Math.random() * textColors.length)];
+
+  context.fillStyle = backgroundColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  context.fillStyle = "#333333";
+  context.fillStyle = textColor;
   context.font = `bold ${fontSize}px Arial`;
   context.textAlign = "center";
   context.textBaseline = "middle";

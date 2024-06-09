@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 export default function SettingsPage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function SettingsPage() {
           if (res.ok) {
             const userData = await res.json();
             setUser(userData);
-            setUsername(userData.username);
+            setUsername(userData.name);
             setEmail(userData.email);
             setAvatarUrl(userData.avatarUrl);
           } else {
@@ -57,7 +57,7 @@ export default function SettingsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ username, email, avatarUrl }),
+        body: JSON.stringify({ name, email, avatarUrl }),
       });
       if (res.ok) {
         toast.success("Profile updated successfully");
@@ -115,11 +115,11 @@ export default function SettingsPage() {
         </div>
         <div className="space-y-4">
           <div className="space-y-1">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="name">name</Label>
             <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="space-y-1">
@@ -135,8 +135,8 @@ export default function SettingsPage() {
             <Label htmlFor="avatarUrl">Profile Picture</Label>
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
-                <AvatarImage src={avatarUrl} alt={username} />
-                <AvatarFallback>{username.charAt(0)}</AvatarFallback>
+                <AvatarImage src={avatarUrl} alt={name} />
+                <AvatarFallback>{name.charAt(0)}</AvatarFallback>
               </Avatar>
               <Input
                 id="avatarUrl"
