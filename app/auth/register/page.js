@@ -19,22 +19,15 @@ function generateAvatar(name) {
   canvas.width = size;
   canvas.height = size;
 
-  const backgroundColors = [
-    "#f0f0f0",
-    "#d32f2f",
-    "#1976d2",
-    "#388e3c",
-    "#fbc02d",
-  ];
-  const textColors = ["#333333", "#ffffff", "#000000"];
+  // Generate a random background color
+  const fillStyle = '#' + Math.floor(Math.random() * 16777215).toString(16);
+  console.log('Generated color:', fillStyle);
 
-  const backgroundColor =
-    backgroundColors[Math.floor(Math.random() * backgroundColors.length)];
-  const textColor = textColors[Math.floor(Math.random() * textColors.length)];
-
-  context.fillStyle = backgroundColor;
+  context.fillStyle = fillStyle;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
+  // Determine the text color based on the background color luminance
+  const textColor = getContrastColor(fillStyle);
   context.fillStyle = textColor;
   context.font = `bold ${fontSize}px Arial`;
   context.textAlign = "center";
@@ -42,6 +35,22 @@ function generateAvatar(name) {
   context.fillText(name.charAt(0).toUpperCase(), size / 2, size / 2);
 
   return canvas.toDataURL("image/png");
+}
+
+function getContrastColor(hex) {
+  // Remove the hash at the start if it's there
+  hex = hex.replace(/^#/, '');
+
+  // Parse the r, g, b values
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Calculate luminance
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+
+  // Return black or white depending on luminance
+  return luminance > 186 ? '#000000' : '#FFFFFF';
 }
 
 export default function Signup() {
@@ -57,7 +66,7 @@ export default function Signup() {
       router.push("/dashboard");
     }
   }, []);
-  
+
   const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -116,7 +125,6 @@ export default function Signup() {
     } else if (message === "failedToProcess") {
       toast.error("Failed to process Google user.");
     }
-    router.push("/dashboard");
   }, []);
 
   return (

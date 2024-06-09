@@ -14,7 +14,7 @@ export async function GET(request) {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id; // Assuming the payload contains `id`
+    const userId = decoded.id;
 
     const query = "SELECT name, email, avatar_url FROM users WHERE id = $1";
     const values = [userId];

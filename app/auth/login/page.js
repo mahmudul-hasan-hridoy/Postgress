@@ -81,7 +81,6 @@ export default function Login() {
       localStorage.setItem("token", token);
       toast.success("You have successfully logged in with Google.");
     }
-    router.push("/dashboard");
   }, []);
 
   return (

@@ -26,7 +26,6 @@ export default function Dashboard() {
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        toast.error("An error occurred while fetching user data.");
       } finally {
         setLoading(false);
       }
