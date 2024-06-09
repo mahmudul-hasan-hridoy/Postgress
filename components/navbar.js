@@ -83,14 +83,14 @@ export default function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Avatar>
-                <AvatarImage src={user.avatarUrl} alt={user.username} />
-                <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+                <AvatarImage src={user.avatarUrl} alt={user.name} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>
                 <div className="px-4 py-2 text-sm text-gray-700">
-                  {user.username}
+                  {user.name}
                 </div>
                 <div className="px-4 py-2 text-sm text-gray-700">
                   {user.email}
@@ -137,11 +137,11 @@ export default function Navbar() {
             {isLoggedIn ? (
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage src={user.avatarUrl} alt={user.username} />
-                  <AvatarFallback>{user.username.slice(0, 2)}</AvatarFallback>
+                  <AvatarImage src={user.avatarUrl} alt={user.name} />
+                  <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 flex-col flex">
-                  <span className="font-semibold">{user.username}</span>
+                  <span className="font-semibold">{user.name}</span>
                   <span className="text-sm opacity-50">{user.email}</span>
                 </div>
 

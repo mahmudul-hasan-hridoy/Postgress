@@ -67,7 +67,7 @@ export default function Dashboard() {
                 className="w-16 h-16 rounded-full mr-4"
               />
               <div>
-                <h2 className="text-2xl font-semibold">{user.username}</h2>
+                <h2 className="text-2xl font-semibold">{user.name}</h2>
                 <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
               </div>
             </div>
@@ -76,7 +76,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-gray-600 dark:text-gray-400 mb-1">Username</p>
-                  <p className="text-lg font-medium">{user.username}</p>
+                  <p className="text-lg font-medium">{user.name}</p>
                 </div>
                 <div>
                   <p className="text-gray-600 dark:text-gray-400 mb-1">Email</p>
