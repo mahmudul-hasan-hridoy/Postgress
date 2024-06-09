@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     const userId = decoded.userId;
 
     // Assuming the id column is a string data type
-    const query = "SELECT username, email, avatar_url FROM users WHERE id = $1";
+    const query = "SELECT name, email, avatar_url FROM users WHERE id = $1";
     const values = [userId];
     const { rows } = await pool.query(query, values);
 

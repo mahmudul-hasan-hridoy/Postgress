@@ -1,129 +1,76 @@
-// api/auth/gooogle/callback/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { google } from "googleapis";
-import crypto from "crypto";
+// api/auth/google/callback/route.ts
+import { getGoogleUser } from "@/lib/google-auth";
 import pool from "@/lib/db";
-import sendEmail from "@/lib/sendEmail";
 import jwt from "jsonwebtoken";
 
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  `${process.env.SITE_URL}/api/auth/google/callback`,
-);
+export const GET = async (req) => {
+  const { searchParams } = new URL(req.url);
+  const code = searchParams.get("code");
 
-function generateVerificationToken() {
-  return crypto.randomBytes(32).toString("hex");
-}
-
-async function sendVerificationEmail(name, email, verificationToken) {
-  const verificationLink = `${process.env.SITE_URL}/api/auth/verify?token=${verificationToken}`;
-  const emailSubject = "Verify your email address";
-  const emailHtml = `
-    <p>Dear ${name}</p>
-    <p>Thank you for registering with our service. To complete your registration, please verify your email address by clicking the link below:</p>
-    <p><a href="${verificationLink}">Verify Your Email</a></p>
-    <p>If you did not create an account, no further action is required.</p>
-    <p>Best regards,</p>
-    <p>The Vercel Team</p>
-  `;
-
-  try {
-    await sendEmail({ to: email, subject: emailSubject, html: emailHtml });
-    console.log("Verification email sent successfully");
-  } catch (error) {
-    console.error("Error sending verification email:", error);
-  }
-}
-
-export const GET = async (request: NextRequest) => {
-  const code = request.nextUrl.searchParams.get("code");
   if (!code) {
-    return NextResponse.redirect(
-      `${process.env.SITE_URL}/auth/register?error=missingCode`,
-    );
+    return new Response(JSON.stringify({ error: "Missing code parameter" }), {
+      status: 400,
+    });
   }
 
   try {
-    const { tokens } = await oauth2Client.getToken(code);
-    oauth2Client.setCredentials(tokens);
-    const userinfo = await google.oauth2("v2").userinfo.get({
-      auth: oauth2Client,
-    });
-    const { email, name, picture } = userinfo.data;
-
-    // Check if the user already exists in the database
-    const existingUser = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email],
-    );
-
-    if (existingUser.rowCount > 0) {
-      // User already exists, log them in
-      console.log("User logged in:", existingUser.rows[0]);
-      const token = jwt.sign(
-        { userId: existingUser.rows[0].id },
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" },
-      );
-      // Set token as cookie
-      const response = NextResponse.redirect(
-        `${process.env.SITE_URL}/dashboard`,
-      );
-      response.cookies.set("token", token, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60,
-      });
-      return response;
-    } else {
-      // Create a new user
-      const verificationToken = generateVerificationToken();
-      const userData = {
-        email,
-        name: name,
-        avatarUrl: picture,
-        verificationToken,
-      };
-
-      const { rows } = await pool.query(
-        "INSERT INTO users (email, name, avatar_url, verification_token) VALUES ($1, $2, $3, $4) RETURNING id",
-        [
-          userData.email,
-          userData.name,
-          userData.avatarUrl,
-          userData.verificationToken,
-        ],
-      );
-
-      const userId = rows[0].id;
-      console.log("User signed up successfully:", userId);
-
-      // Generate JWT token for the new user
-      const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
-
-      // Send verification email
-      await sendVerificationEmail(
-        userData.name,
-        userData.email,
-        userData.verificationToken,
-      );
-
-      // Set token as cookie
-      const response = NextResponse.redirect(
-        `${process.env.SITE_URL}/auth/register?success=signedUpWithGoogle`,
-      );
-      response.cookies.set("token", token, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60,
-      });
-      return response;
+    const { email, picture, name } = await getGoogleUser(code);
+    let user = await findUserByEmail(email);
+    if (!user) {
+      user = await createUser(name, email, picture);
     }
+    const token = generateToken(user);
+    return new Response(JSON.stringify({ token }), {
+      status: 200,
+    });
   } catch (error) {
-    console.error("Error signing up with Google:", error);
-    return NextResponse.redirect(
-      `${process.env.SITE_URL}/auth/register?error=signUpFailed`,
+    console.error("Error processing Google user:", error);
+    return new Response(
+      JSON.stringify({ error: "Failed to process Google user" }),
+      { status: 500 },
     );
   }
+};
+
+const findUserByEmail = async (email) => {
+  const client = await pool.connect();
+  const query = "SELECT * FROM users WHERE email = $1";
+  const values = [email];
+
+  try {
+    const result = await client.query(query, values);
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+};
+
+const createUser = async (name, email, avatarUrl) => {
+  const client = await pool.connect();
+  const query = `
+    INSERT INTO users (name, email, avatar_url, created_at, updated_at) 
+    VALUES ($1, $2, $3, $4, $5) 
+    RETURNING id, name, email, avatar_url
+  `;
+  const values = [name, email, avatarUrl, new Date(), new Date()];
+
+  try {
+    const result = await client.query(query, values);
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+};
+
+const generateToken = (user) => {
+  const payload = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatarUrl: user.avatar_url,
+  };
+  const secret = process.env.JWT_SECRET; // Ensure this is set in your environment variables
+  const options = { expiresIn: "7d" }; // Token expiration time
+
+  return jwt.sign(payload, secret, options);
 };

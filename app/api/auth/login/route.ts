@@ -1,3 +1,4 @@
+// api/auth/login/route.ts
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import pool from "@/lib/db";

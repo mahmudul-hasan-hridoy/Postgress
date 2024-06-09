@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
+import { getGoogleAuthUrl } from "@/lib/google-auth";
 
 function generateAvatar(username) {
   const canvas = document.createElement("canvas");
@@ -25,14 +26,14 @@ function generateAvatar(username) {
   context.font = `bold ${fontSize}px Arial`;
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.fillText(username.charAt(0).toUpperCase(), size / 2, size / 2);
+  context.fillText(name.charAt(0).toUpperCase(), size / 2, size / 2);
 
   return canvas.toDataURL("image/png");
 }
 
 export default function Signup() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const [name, setname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -56,14 +57,14 @@ export default function Signup() {
     setLoading(true);
     try {
       // Generate the profile picture URL
-      const avatarUrl = generateAvatar(username);
+      const avatarUrl = generateAvatar(name);
 
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, email, password, avatarUrl }),
+        body: JSON.stringify({ name, email, password, avatarUrl }),
       });
       if (res.ok) {
         const { userId } = await res.json();
@@ -80,8 +81,17 @@ export default function Signup() {
     }
   };
 
-  const handleGoogleSignUp = () => {
-    window.location.href = "/api/auth/google";
+  const handleGoogleSignUp = async () => {
+    try {
+      const googleAuthUrl = await getGoogleAuthUrl();
+      window.location.href = googleAuthUrl;
+    } catch (error) {
+      console.error("Error getting Google auth URL:", error);
+      toast.error(
+        "An error occurred while signing up with Google.",
+        error.message,
+      );
+    }
   };
 
   return (
@@ -110,14 +120,14 @@ export default function Signup() {
         </div>
         <form className="space-y-4" onSubmit={handleSignUp}>
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="name">Username</Label>
             <Input
               type="name"
               id="username"
               placeholder="Enter your username"
               required
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={name}
+              onChange={(e) => setname(e.target.value)}
             />
           </div>
           <div className="space-y-2">
