@@ -10,48 +10,28 @@ import { Loader2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { getGoogleAuthUrl } from "@/lib/google-auth";
 
-function generateAvatar(name) {
+function generateAvatar() {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d");
   const size = 128;
-  const fontSize = 64;
 
   canvas.width = size;
   canvas.height = size;
 
-  // Generate a random background color
-  const fillStyle = "#" + Math.floor(Math.random() * 16777215).toString(16);
-  console.log("Generated color:", fillStyle);
+  // Generate two random colors for the gradient
+  const color1 = "#" + Math.floor(Math.random() * 16777215).toString(16);
+  const color2 = "#" + Math.floor(Math.random() * 16777215).toString(16);
 
-  context.fillStyle = fillStyle;
+  // Create a gradient
+  const gradient = context.createLinearGradient(0, 0, size, size);
+  gradient.addColorStop(0, color1);
+  gradient.addColorStop(1, color2);
+
+  context.fillStyle = gradient;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Determine the text color based on the background color luminance
-  const textColor = getContrastColor(fillStyle);
-  context.fillStyle = textColor;
-  context.font = `bold ${fontSize}px Arial`;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillText(name.charAt(0).toUpperCase(), size / 2, size / 2);
-
   return canvas.toDataURL("image/png");
-}
-
-function getContrastColor(hex) {
-  // Remove the hash at the start if it's there
-  hex = hex.replace(/^#/, "");
-
-  // Parse the r, g, b values
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-
-  // Calculate luminance
-  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-
-  // Return black or white depending on luminance
-  return luminance > 186 ? "#000000" : "#FFFFFF";
-}
+} 
 
 export default function Signup() {
   const router = useRouter();
@@ -72,7 +52,7 @@ export default function Signup() {
     setLoading(true);
     try {
       // Generate the profile picture URL
-      const avatarUrl = generateAvatar(name);
+      const avatarUrl = generateAvatar();
 
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -155,10 +135,10 @@ export default function Signup() {
         </div>
         <form className="space-y-4" onSubmit={handleSignUp}>
           <div className="space-y-2">
-            <Label htmlFor="name">Username</Label>
+            <Label htmlFor="name">name</Label>
             <Input
               type="name"
-              id="username"
+              id="name"
               placeholder="Enter your username"
               required
               value={name}

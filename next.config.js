@@ -3,14 +3,14 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    formats: [
-      "image/avif",
-      "image/webp", 
-    ],
+    formats: ["image/avif", "image/webp"],
     dangerouslyAllowSVG: true,
     remotePatterns: [
       {
         hostname: "lh3.googleusercontent.com",
+      },
+      {
+        hostname: "firebasestorage.googleapis.com",
       },
     ],
   },

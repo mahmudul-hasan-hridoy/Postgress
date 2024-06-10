@@ -37,7 +37,7 @@ export const POST = async (req) => {
       console.log("Stored avatar URL:", storedAvatarUrl);
 
       const query =
-        "INSERT INTO users (name, email, password, avatar_url, verification_token, provider, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id";
+        "INSERT INTO users (name, email, password, avatar_url, verification_token, provider, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id";
       const values = [
         name,
         email,
