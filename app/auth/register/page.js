@@ -106,8 +106,8 @@ export default function Signup() {
   // In your Signup component or wherever you handle the GitHub login
 
   const handleGitHubLogin = () => {
-    const redirectUri = `${process.env.SITE_URL}/api/auth/github/callback`;
-    const clientId = "Ov23lif0Up3HI8lqipY8";
+    const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/github/callback`;
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
     const scope = "user:email";
     const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
     window.location.href = authUrl;

@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import sendVerificationEmail from "@/lib/sendVerificationEmail";
 
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
@@ -16,8 +17,8 @@ export async function GET(req) {
     );
   }
 
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+  const clientId = `${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}`;
+  const clientSecret = `${process.env.GITHUB_CLIENT_SECRET}`;
   const tokenUrl = "https://github.com/login/oauth/access_token";
   const userUrl = "https://api.github.com/user";
   const emailUrl = "https://api.github.com/user/emails";
