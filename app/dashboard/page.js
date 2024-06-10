@@ -22,7 +22,7 @@ export default function Dashboard() {
           const userData = await res.json();
           setUser(userData);
         } else {
-          toast.error(res.statusText);
+          console.log(res.statusText);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);

@@ -31,7 +31,7 @@ export async function GET(req) {
         "signedUpWithGoogle",
         token,
       );
-    } else {
+    } else if (user.provider === "google") {
       const token = generateToken(user);
       return redirectWithMessage(
         "/auth/login",
@@ -39,6 +39,8 @@ export async function GET(req) {
         "loginWithGoogle",
         token,
       );
+    } else {
+      return redirectWithMessage("/auth/register", "error", "usertaken");
     }
   } catch (error) {
     console.error("Error processing Google user:", error);
@@ -62,8 +64,8 @@ const findUserByEmail = async (email) => {
 const createUser = async (name, email, avatarUrl, verificationToken) => {
   const client = await pool.connect();
   const query = `
-    INSERT INTO users (name, email, avatar_url, verification_token, created_at, updated_at) 
-    VALUES ($1, $2, $3, $4, $5, $6) 
+    INSERT INTO users (name, email, avatar_url, verification_token, provider, created_at, updated_at) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7) 
     RETURNING id, name, email, avatar_url
   `;
   const values = [
@@ -71,6 +73,7 @@ const createUser = async (name, email, avatarUrl, verificationToken) => {
     email,
     avatarUrl,
     verificationToken,
+    "google",
     new Date(),
     new Date(),
   ];

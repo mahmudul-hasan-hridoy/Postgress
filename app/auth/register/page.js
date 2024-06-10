@@ -20,8 +20,8 @@ function generateAvatar(name) {
   canvas.height = size;
 
   // Generate a random background color
-  const fillStyle = '#' + Math.floor(Math.random() * 16777215).toString(16);
-  console.log('Generated color:', fillStyle);
+  const fillStyle = "#" + Math.floor(Math.random() * 16777215).toString(16);
+  console.log("Generated color:", fillStyle);
 
   context.fillStyle = fillStyle;
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -39,7 +39,7 @@ function generateAvatar(name) {
 
 function getContrastColor(hex) {
   // Remove the hash at the start if it's there
-  hex = hex.replace(/^#/, '');
+  hex = hex.replace(/^#/, "");
 
   // Parse the r, g, b values
   const r = parseInt(hex.substring(0, 2), 16);
@@ -50,7 +50,7 @@ function getContrastColor(hex) {
   const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
 
   // Return black or white depending on luminance
-  return luminance > 186 ? '#000000' : '#FFFFFF';
+  return luminance > 186 ? "#000000" : "#FFFFFF";
 }
 
 export default function Signup() {
@@ -120,6 +120,8 @@ export default function Signup() {
       toast.success("You have successfully Sign up with Google.");
     } else if (message === "signUpFailed") {
       toast.error("Error signing up with Google. Please try again.");
+    } else if (message === "usertaken") {
+      toast.error("Email already exists with a different provider");
     } else if (message === "missingCode") {
       toast.error("Missing code parameter. Unable to complete Google Sign-Up.");
     } else if (message === "failedToProcess") {
