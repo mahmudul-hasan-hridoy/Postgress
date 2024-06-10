@@ -106,32 +106,13 @@ export default function Signup() {
   // In your Signup component or wherever you handle the GitHub login
 
   const handleGitHubLogin = () => {
-    const redirectUri = `https://726f5e50-68cf-402a-bce6-30f05e1857d4-00-1cufy1sixsxvv.kirk.replit.dev/api/auth/github/callback`;
+    const redirectUri = `${process.env.SITE_URL}/api/auth/github/callback`;
     const clientId = "Ov23lif0Up3HI8lqipY8";
     const scope = "user:email";
     const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
     window.location.href = authUrl;
   };
 
-  // After the user is redirected back from GitHub, handle the response in your useEffect or similar logic
-
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const token = url.searchParams.get("token");
-    const success = url.searchParams.get("success");
-    const error = url.searchParams.get("error");
-
-    if (success) {
-      if (token) {
-        localStorage.setItem("token", token);
-        toast.success("Login successful!");
-      } else {
-        toast.error("Failed to retrieve token.");
-      }
-    } else if (error) {
-      toast.error(error);
-    }
-  }, []);
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
@@ -148,7 +129,7 @@ export default function Signup() {
             onClick={handleGoogleSignUp}
           >
             <FcGoogle size={24} />
-            Sign Up with Google
+            Continue with Google
           </Button>
           <Button
             variant="outline"

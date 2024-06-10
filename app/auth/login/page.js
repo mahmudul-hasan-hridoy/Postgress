@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 import { getGoogleAuthUrl } from "@/lib/google-auth";
 
 export default function Login() {
@@ -83,6 +84,14 @@ export default function Login() {
     }
   }, []);
 
+  const handleGitHubLogin = () => {
+    const redirectUri = `${process.env.SITE_URL}/api/auth/github/callback`;
+    const clientId = process.env.GITHUB_CLIENT_ID;
+    const scope = "user:email";
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    window.location.href = authUrl;
+  };
+
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
@@ -100,6 +109,14 @@ export default function Login() {
           >
             <FcGoogle size={24} />
             Continue with Google
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 font-medium"
+            onClick={handleGitHubLogin}
+          >
+            <FaGithub size={24} />
+            Continue with GitHub
           </Button>
         </div>
         <div className="flex items-center justify-between">

@@ -31,7 +31,7 @@ export async function GET(req) {
         "signedUpWithGoogle",
         token,
       );
-    } else if (user.provider === "google") {
+    } else if (user.email_verefied && user.provider === "google") {
       const token = generateToken(user);
       return redirectWithMessage(
         "/auth/login",

@@ -16,8 +16,8 @@ export async function GET(req) {
     );
   }
 
-  const clientId = "Ov23lif0Up3HI8lqipY8";
-  const clientSecret = "e8dcb86d8745ac1f34d0311679f705826bc54e68";
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
   const tokenUrl = "https://github.com/login/oauth/access_token";
   const userUrl = "https://api.github.com/user";
   const emailUrl = "https://api.github.com/user/emails";
@@ -75,9 +75,9 @@ export async function GET(req) {
         const token = jwt.sign(
           { id: existingUser.id },
           process.env.JWT_SECRET,
-          { expiresIn: "10h" }
+          { expiresIn: "7d" }
         );
-        return NextResponse.json({ success: true, token });
+        return NextResponse.json({ token });
       } else {
         return NextResponse.json({
           error: "Email already exists with a different provider",
