@@ -7,7 +7,7 @@ export async function PUT(request: Request) {
   if (!authHeader) {
     return NextResponse.json(
       { message: "Authorization header missing" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -18,17 +18,16 @@ export async function PUT(request: Request) {
 
     const { name, email, avatarUrl } = await request.json();
 
+    const updated_at = new Date(); // Define updated_at here
+
     const query =
-      "UPDATE users SET name = $1, email = $2, avatar_url = $3 WHERE id = $4 RETURNING id";
-    const values = [name, email, avatarUrl, userId];
+      "UPDATE users SET name = $1, email = $2, avatar_url = $3, updated_at = $4 WHERE id = $5 RETURNING id";
+    const values = [name, email, avatarUrl, updated_at, userId];
 
     const { rows } = await pool.query(query, values);
 
     if (rows.length === 0) {
-      return NextResponse.json(
-        { message: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ message: "Profile updated successfully" });
@@ -36,7 +35,7 @@ export async function PUT(request: Request) {
     console.error(error);
     return NextResponse.json(
       { message: "Invalid or expired token" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 }

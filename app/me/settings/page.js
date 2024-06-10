@@ -28,7 +28,7 @@ export default function SettingsPage() {
             },
           });
           if (res.ok) {
-            const userData = await res.json();
+            const userData = await res.json();           
             setUser(userData);
             setName(userData.name);
             setEmail(userData.email);

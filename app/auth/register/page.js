@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 import { getGoogleAuthUrl } from "@/lib/google-auth";
 
 function generateAvatar() {
@@ -31,7 +32,7 @@ function generateAvatar() {
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   return canvas.toDataURL("image/png");
-} 
+}
 
 export default function Signup() {
   const router = useRouter();
@@ -39,13 +40,6 @@ export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      router.push("/dashboard");
-    }
-  }, []);
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -109,6 +103,14 @@ export default function Signup() {
     }
   }, []);
 
+  const handleGitHubLogin = () => {
+    const redirectUri = `https://726f5e50-68cf-402a-bce6-30f05e1857d4-00-1cufy1sixsxvv.kirk.replit.dev/api/auth/github/callback`;
+    const clientId = "Ov23lif0Up3HI8lqipY8";
+    const scope = "user:email";
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    window.location.href = authUrl;
+  };
+
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-gray-100 px-4 py-12 dark:bg-gray-950">
       <div className="w-full max-w-md space-y-6 rounded-lg bg-white p-6 shadow-lg dark:bg-gray-900">
@@ -126,6 +128,14 @@ export default function Signup() {
           >
             <FcGoogle size={24} />
             Sign Up with Google
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full flex items-center justify-center gap-2 font-medium"
+            onClick={handleGitHubLogin}
+          >
+            <FaGithub size={24} />
+            Continue with GitHub
           </Button>
         </div>
         <div className="flex items-center justify-between">
