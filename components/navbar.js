@@ -89,17 +89,17 @@ export default function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>
-                <div className="px-4 py-2 text-sm text-gray-700">
-                  {user.name}
-                </div>
-                <div className="px-4 py-2 text-sm text-gray-700">
-                  {user.email}
+                <div className="flex flex-col">
+                  <span className="text-md font-medium">{user.name}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {user.email}
+                  </span>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
+                <span>Signout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -140,12 +140,14 @@ export default function Navbar() {
                   <AvatarImage src={user.avatarUrl} alt={user.name} />
                   <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1 flex-col flex">
-                  <span className="font-semibold">{user.name}</span>
-                  <span className="text-sm opacity-50">{user.email}</span>
+                <div className="flex flex-col flex-1">
+                  <span className="text-md font-medium">{user.name}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {user.email}
+                  </span>
                 </div>
 
-                <div className="w-10 h-10">
+                <div className="w-10 h-10 flex-end">
                   <Button
                     size="icon"
                     variant="outline"
