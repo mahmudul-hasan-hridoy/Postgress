@@ -34,6 +34,7 @@
     "google-auth-library": "^9.10.0",
     "googleapis": "^140.0.0",
     "iron-session": "^8.0.1",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.381.0",
     "nanoid": "^5.0.7",

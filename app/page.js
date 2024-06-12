@@ -3,16 +3,20 @@ import { useState } from "react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Clipboard, ClipboardCheck } from "lucide-react";
+import Cookies from "js-cookie";
 
 export default function Home() {
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [history, setHistory] = useState(() => {
+    const storedHistory = Cookies.get("urlHistory");
+    return storedHistory ? JSON.parse(storedHistory) : [];
+  });
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -33,7 +37,13 @@ export default function Home() {
 
       const data = await response.json();
       setShortUrl(data.shortUrl);
-      toast.success("URL shortened successfully!");
+      const newHistory = [
+        ...history,
+        { originalUrl: url, shortenedUrl: data.shortUrl },
+      ];
+      setHistory(newHistory);
+      Cookies.set("urlHistory", JSON.stringify(newHistory), { expires: 365 });
+      setUrl("");
     } catch (error) {
       toast.error(error.message || "An error occurred. Please try again.");
     } finally {
@@ -41,15 +51,14 @@ export default function Home() {
     }
   };
 
-  const handleCopy = () => {
-    setIsCopied(true);
-    toast.success("URL copied to clipboard!");
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
-      <main className="flex-1 py-12 px-6 md:px-8 max-w-xl mx-auto space-y-8">
-        <div className="max-w-md w-full">
+    <div className="flex flex-col min-h-screen">
+      <main className="py-12 md:px-8">
+        <div className="container md:mx-auto max-w-xl space-y-8">
           <div className="text-center space-y-4">
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl text-gray-800">
               Shorten your links with ease
@@ -58,52 +67,67 @@ export default function Home() {
               Simplify your online presence with our powerful URL shortener.
             </p>
           </div>
-          <form onSubmit={handleSubmit} className="flex mb-6 flex-col gap-3 mt-4">
+          <form
+            onSubmit={handleSubmit}
+            className="flex mb-6 flex-col gap-3 mt-4"
+          >
             <Input
               type="text"
               id="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="Enter the long URL"
+              placeholder="https://example.com/very-long-url"
               required
-              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            <Button
-              type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md"
-              disabled={isLoading}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Shortening..." : "Shorten"}
             </Button>
           </form>
           {shortUrl && (
-            <div className="mt-6 flex items-center justify-between">
-              <a
-                href={shortUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                {shortUrl}
-              </a>
-              <CopyToClipboard text={shortUrl} onCopy={handleCopy}>
+            <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg">
+              <h2 className="text-lg font-bold mb-2">Your Shortened URL</h2>
+              <div className="flex items-center justify-between">
+                <p className="text-gray-900 dark:text-gray-100 font-medium">
+                  {shortUrl}
+                </p>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="flex items-center justify-center px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100"
+                  onClick={() => copyToClipboard(shortUrl)}
                 >
-                  {isCopied ? (
-                    <>
-                      <ClipboardCheck className="mr-2 h-4 w-4" /> Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Clipboard className="mr-2 h-4 w-4" /> Copy URL
-                    </>
-                  )}
+                  Copy
                 </Button>
-              </CopyToClipboard>
+              </div>
+            </div>
+          )}
+          {history.length > 0 && (
+            <div>
+              <h2 className="text-2xl font-bold mb-4">History</h2>
+              <div className="space-y-4">
+                {history.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="text-gray-900 dark:text-gray-100 font-medium">
+                        {item.originalUrl}
+                      </p>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
+                        {item.shortenedUrl}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(item.shortenedUrl)}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
