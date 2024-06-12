@@ -6,14 +6,13 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import sendVerificationEmail from "@/lib/sendVerificationEmail";
 
-
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
   if (!code) {
     return NextResponse.json(
       { error: "Code is missing from query parameters" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -41,7 +40,7 @@ export async function GET(req) {
     if (!tokenData.access_token) {
       return NextResponse.json(
         { error: "Failed to retrieve access token" },
-        { status: 400 }
+        { status: 400 },
       );
     }
     const accessToken = tokenData.access_token;
@@ -76,7 +75,7 @@ export async function GET(req) {
         const token = jwt.sign(
           { id: existingUser.id },
           process.env.JWT_SECRET,
-          { expiresIn: "7d" }
+          { expiresIn: "7d" },
         );
         return NextResponse.json({ token });
       } else {
@@ -92,10 +91,11 @@ export async function GET(req) {
     // Store new user data in the database
     const now = new Date();
     const { rows: newRows } = await pool.query(
-      `INSERT INTO users (name, email, avatar_url, provider, verification_token, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO users (id,name, email, avatar_url, provider, verification_token, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7,$8)
        RETURNING id, name, email, avatar_url, provider, verification_token`,
       [
+        uuidv4(),
         userData.name,
         primaryEmail,
         userData.avatar_url,
@@ -103,7 +103,7 @@ export async function GET(req) {
         verificationToken,
         now,
         now,
-      ]
+      ],
     );
     const newUser = newRows[0];
 

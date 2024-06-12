@@ -80,11 +80,12 @@ const createUser = async (
   verificationToken,
 ) => {
   const query = `
-    INSERT INTO users (name, email, avatar_url, verification_token, provider, created_at, updated_at)
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    INSERT INTO users (id,name, email, avatar_url, verification_token, provider, created_at, updated_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7,$8)
     RETURNING id, name, email, avatar_url, verification_token, email_verified
   `;
   const values = [
+    uuidv4(),
     name,
     email,
     avatarUrl,
