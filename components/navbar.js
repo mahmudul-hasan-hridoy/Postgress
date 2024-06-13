@@ -132,6 +132,28 @@ export default function Navbar() {
             >
               Contact
             </Link>
+            {isLoggedIn && (
+              <>
+                <Link
+                  className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
+                  href="/create"
+                >
+                  Create
+                </Link>
+                <Link
+                  className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
+                  href="/me/settings"
+                >
+                  Settings
+                </Link>
+                <Link
+                  className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
+                  href="/dashboard"
+                >
+                  Dashboard
+                </Link>
+              </>
+            )}
           </div>
           <div className="grid gap-2 border-t pt-4">
             {isLoggedIn ? (

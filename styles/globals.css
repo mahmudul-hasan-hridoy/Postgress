@@ -2,6 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+.blog-item {
+  padding: 1rem;
+}
+
+pre {
+  position: relative;
+  max-height: 500px;
+} 
+
+
+.blog-item-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.blog-item-thumbnail {
+  margin-bottom: 1rem;
+}
+
+.blog-item-excerpt {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.blog-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.read-time {
+  font-size: 0.8rem;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tag-link {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
   @layer base {
     :root {
       --background: 0 0% 100%;

@@ -73,7 +73,12 @@ export async function GET(req) {
       if (existingUser.email_verified && existingUser.provider === "github") {
         // Generate JWT token for the existing user
         const token = jwt.sign(
-          { id: existingUser.id },
+          {
+            id: existingUser.id,
+            name: existingUser.name,
+            email: existingUser.email,
+            avatatUrl: existingUser.avatar_url,
+          },
           process.env.JWT_SECRET,
           { expiresIn: "7d" },
         );
