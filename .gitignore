@@ -20,7 +20,6 @@ out/
 tailwind.config.js
 
 # Build artifacts
-dist/
 build/
 
 # Debug files

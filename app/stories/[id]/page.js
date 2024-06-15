@@ -63,7 +63,7 @@ export default async function Story({ params }) {
             <div className="flex items-center space-x-2 text-sm">
               <span className="post-date text-sm text-gray-500 dark:text-gray-300">
                 <time dateTime={story.created_at}>
-                  {format(new Date(story.created_at), "MMMM d, yyyy")}
+                  {format(story.created_at, "MMMM d, yyyy")}
                 </time>
               </span>
               <span className="flex items-center gap-1">
