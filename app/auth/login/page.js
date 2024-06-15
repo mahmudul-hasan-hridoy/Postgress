@@ -73,14 +73,21 @@ export default function Login() {
   };
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const status = url.searchParams.get("status");
-    const message = url.searchParams.get("message");
-    const token = url.searchParams.get("token");
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const error = url.searchParams.get("error");
+      const token = url.searchParams.get("token");
+      const exist = url.searchParams.get("exist");
 
-    if (token) {
-      localStorage.setItem("token", token);
-      toast.success("You have successfully logged in.");
+      if (token) {
+        localStorage.setItem("token", token);
+        toast.success("You have successfully logged in.");
+      } else if (exist) {
+        toast.error(exist);
+      } else if (error) {
+        console.error(error);
+        toast.error(error);
+      }
     }
   }, []);
 
