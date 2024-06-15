@@ -44,7 +44,7 @@ export const POST = async (request: NextRequest) => {
       JSON.stringify([authorDetails]),
       content,
       tags,
-      stats.text,
+      Math.ceil(stats.minutes),
       { self: "", canonical: "" },
       main_image,
     ];
