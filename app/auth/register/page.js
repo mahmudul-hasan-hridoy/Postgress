@@ -84,26 +84,24 @@ export default function Signup() {
   };
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const status = url.searchParams.get("status");
-    const message = url.searchParams.get("message");
-    const token = url.searchParams.get("token");
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const token = url.searchParams.get("token");
+      const error = url.searchParams.get("error");
+      const exist = url.searchParams.get("exist");
 
-    if (status === "success" && message === "signedUpWithGoogle" && token) {
-      localStorage.setItem("token", token);
-      toast.success("You have successfully Sign up with Google.");
-    } else if (message === "signUpFailed") {
-      toast.error("Error signing up with Google. Please try again.");
-    } else if (message === "usertaken") {
-      toast.error("Email already exists with a different provider");
-    } else if (message === "missingCode") {
-      toast.error("Missing code parameter. Unable to complete Google Sign-Up.");
-    } else if (message === "failedToProcess") {
-      toast.error("Failed to process Google user.");
+      if (token) {
+        localStorage.setItem("token", token);
+        toast.success("Sign-up successful! Now verify your email.");
+        router.push("/");
+      } else if (exist) {
+        toast.error(exist);
+      } else if (error) {
+        console.error(error);
+        toast.error(error);
+      }
     }
-  }, []);
-
-  // In your Signup component or wherever you handle the GitHub login
+  }, [router]);
 
   const handleGitHubLogin = () => {
     const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/github/callback`;

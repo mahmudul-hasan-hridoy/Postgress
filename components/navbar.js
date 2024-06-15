@@ -152,6 +152,12 @@ export default function Navbar() {
                 >
                   Dashboard
                 </Link>
+                <Link
+                  className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
+                  href="/me/stories"
+                >
+                  Stories
+                </Link>
               </>
             )}
           </div>

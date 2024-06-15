@@ -1,6 +1,6 @@
 import React from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '../dist/ckeditor';  // Adjust the path as needed
+import ClassicEditor from '@/dist/ckeditor';  // Adjust the path as needed
 
 export default function ContentEditor({ content = '', onChange }) {
   // Ensure content is always a string

@@ -4,7 +4,6 @@ import fetch from "node-fetch";
 import pool from "@/lib/db";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import sendVerificationEmail from "@/lib/sendVerificationEmail";
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
@@ -68,55 +67,73 @@ export async function GET(req) {
     const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
       primaryEmail,
     ]);
+
+    let user;
+    let isNewUser = false;
+
     if (rows.length > 0) {
-      const existingUser = rows[0];
-      if (existingUser.email_verified && existingUser.provider === "github") {
-        // Generate JWT token for the existing user
-        const token = jwt.sign(
-          {
-            id: existingUser.id,
-            name: existingUser.name,
-            email: existingUser.email,
-            avatatUrl: existingUser.avatar_url,
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: "7d" },
-        );
-        return NextResponse.json({ token });
-      } else {
-        return NextResponse.json({
-          error: "Email already exists with a different provider",
-        });
+      user = rows[0];
+      if (user.provider !== "github") {
+        const redirectUrl = new URL("/auth/register", process.env.NEXT_PUBLIC_BASE_URL);
+        redirectUrl.searchParams.set("exist", "Email already exists with a different provider");
+        return NextResponse.redirect(redirectUrl.toString());
       }
+    } else {
+      isNewUser = true;
+      // Generate a verification token
+      const verificationToken = uuidv4();
+
+      // Store new user data in the database
+      const now = new Date();
+      const { rows: newRows } = await pool.query(
+        `INSERT INTO users (id, name, email, avatar_url, provider, verification_token, email_verified, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING id, name, email, avatar_url, provider, verification_token, email_verified`,
+        [
+          uuidv4(),
+          userData.name,
+          primaryEmail,
+          userData.avatar_url,
+          "github",
+          verificationToken,
+          true,
+          now,
+          now,
+        ],
+      );
+      user = newRows[0];
     }
 
-    // Generate a verification token
-    const verificationToken = uuidv4();
-
-    // Store new user data in the database
-    const now = new Date();
-    const { rows: newRows } = await pool.query(
-      `INSERT INTO users (id,name, email, avatar_url, provider, verification_token, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7,$8)
-       RETURNING id, name, email, avatar_url, provider, verification_token`,
-      [
-        uuidv4(),
-        userData.name,
-        primaryEmail,
-        userData.avatar_url,
-        "github",
-        verificationToken,
-        now,
-        now,
-      ],
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatarUrl: user.avatar_url,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
     );
-    const newUser = newRows[0];
 
-    // Send verification email
-    await sendVerificationEmail(newUser.email, verificationToken);
-    return NextResponse.json({ success: true, user: newUser });
+    // Redirect to the appropriate frontend page with the token
+    const redirectUrl = new URL(
+      isNewUser ? "/auth/register" : "/auth/login",
+      process.env.NEXT_PUBLIC_BASE_URL,
+    );
+    redirectUrl.searchParams.set("token", token);
+
+    return NextResponse.redirect(redirectUrl.toString());
   } catch (error) {
-    console.error("Error fetching user data:", error);
-    return NextResponse.json({ error: "Internal Server Error" });
+    console.error("Error during GitHub OAuth:", error);
+
+    // Redirect to the frontend with an error message
+    const redirectUrl = new URL(
+      "/auth/login",
+      process.env.NEXT_PUBLIC_BASE_URL,
+    );
+    redirectUrl.searchParams.set("error", "Failed to authenticate with GitHub");
+
+    return NextResponse.redirect(redirectUrl.toString());
   }
 }

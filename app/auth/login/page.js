@@ -78,9 +78,9 @@ export default function Login() {
     const message = url.searchParams.get("message");
     const token = url.searchParams.get("token");
 
-    if (status === "success" && message === "loginWithGoogle" && token) {
+    if (token) {
       localStorage.setItem("token", token);
-      toast.success("You have successfully logged in with Google.");
+      toast.success("You have successfully logged in.");
     }
   }, []);
 
