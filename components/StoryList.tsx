@@ -132,7 +132,7 @@ const StoryList: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="flex flex-1 flex-col flex-shrink-0">
               <h2 className="blog-item-title font-bold line-clamp-2 text-ellipsis text-xl">
-                <Link href={`/post/${story.id}`}>{story.title}</Link>
+                <Link href={`/stories/${story.id}`}>{story.title}</Link>
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 text-ellipsis"></p>
             </div>

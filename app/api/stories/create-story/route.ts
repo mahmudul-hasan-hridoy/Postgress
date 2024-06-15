@@ -2,13 +2,14 @@ import jwt from "jsonwebtoken";
 import pool from "@/lib/db";
 import { v4 as uuidv4 } from "uuid";
 import { NextRequest, NextResponse } from "next/server";
+import readingTime from "reading-time";
 
 export const POST = async (request: NextRequest) => {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader) {
     return NextResponse.json(
       { message: "Authorization header missing" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -21,6 +22,8 @@ export const POST = async (request: NextRequest) => {
     const userAvatarUrl = decoded.avatarUrl;
 
     const { title, subtitle, content, tags, main_image } = await request.json();
+
+    const stats = readingTime(content);
 
     const authorDetails = {
       author_id: userId,
@@ -41,7 +44,7 @@ export const POST = async (request: NextRequest) => {
       JSON.stringify([authorDetails]),
       content,
       tags,
-      Math.ceil(content.length / 200),
+      stats.text,
       { self: "", canonical: "" },
       main_image,
     ];
@@ -56,15 +59,15 @@ export const POST = async (request: NextRequest) => {
 
     return NextResponse.json(
       { message: "Story created successfully", storyUrl },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { message: "Invalid or expired token" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 };
 
-export const runtime = "edge"
+export const runtime = "nodejs";

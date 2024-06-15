@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 
+
 const ContentEditor = dynamic(() => import("@/components/ContentEditor"), {
   ssr: false,
 });
@@ -69,6 +70,7 @@ export default function NewStory() {
       });
 
       if (response.ok) {
+        toast.success("Story created successfully");
         router.push("/");
       } else {
         const errorData = await response.json();
@@ -118,7 +120,7 @@ export default function NewStory() {
         </div>
         <ContentEditor content={content} onChange={handleContentChange} />
         <TagInput tags={tags} onChange={handleTagChange} />
-        <PublicationSelect onChange={handlePublicationChange} />
+
         <Button className="w-full" type="submit" disabled={loading}>
           {loading ? <Loader2 className="animate-spin" /> : "Create story"}
         </Button>

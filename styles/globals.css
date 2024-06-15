@@ -1,6 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import '@ckeditor/ckeditor5-theme-lark/theme/ckeditor5-editor-classic/classiceditor.css';
+
+/* In your global CSS or component-specific CSS */
+.ck.ck-editor__main > .ck-editor__editable {
+  min-height: 300px;
+}
+
+.ck.ck-reset_all, .ck.ck-reset_all * {
+  box-sizing: border-box;
+}
 
 .blog-item {
   padding: 1rem;
