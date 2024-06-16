@@ -137,7 +137,7 @@ const StoryList: React.FC = () => {
               <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 text-ellipsis"></p>
             </div>
             <div className="relative blog-item-thumbnail max-w-[150px] min-w-[150px] h-[100px]">
-              <Link href={`/post/${story.id}`}>
+              <Link href={`/stories/${story.id}`}>
                 {story.main_image && (
                   <Image
                     src={story.main_image}

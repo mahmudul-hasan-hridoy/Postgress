@@ -3,9 +3,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { SheetTrigger, SheetContent, Sheet } from "@/components/ui/sheet";
-import { Link2, AlignJustify, LogOut } from "lucide-react";
+import { Link2, Search, Bell, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,153 +60,95 @@ export default function Navbar() {
         <Link2 className="h-6 w-6" />
         <span className="text-lg font-semibold">URL Shortener</span>
       </Link>
-      <nav className="hidden items-center gap-4 md:flex">
-        <Link
-          className="text-sm font-medium hover:underline hover:underline-offset-4"
-          href="/"
-        >
-          Home
-        </Link>
-        <Link
-          className="text-sm font-medium hover:underline hover:underline-offset-4"
-          href="#"
-        >
-          Shorten
-        </Link>
-        <Link
-          className="text-sm font-medium hover:underline hover:underline-offset-4"
-          href="#"
-        >
-          Contact
-        </Link>
-        {isLoggedIn && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Avatar>
-                <AvatarImage src={user.avatarUrl} alt={user.name} />
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                <div className="flex flex-col">
-                  <span className="text-md font-medium">{user.name}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {user.email}
-                  </span>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Signout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </nav>
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button className="md:hidden" size="icon" variant="outline">
-            <AlignJustify className="h-6 w-6" />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="flex flex-col justify-between">
-          <div className="grid gap-4 p-4">
-            <Link
-              className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
-              href="/"
-            >
-              Home
-            </Link>
-            <Link
-              className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
-              href="#"
-            >
-              Shorten
-            </Link>
-            <Link
-              className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
-              href="#"
-            >
-              Contact
-            </Link>
+
+      <div className="flex items-center gap-4">
+        <div className="hidden md:block w-72">
+          <Input type="text" placeholder="Search..." />
+        </div>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <Search className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon">
+          <Bell className="h-5 w-5" />
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar className="cursor-pointer">
+              <AvatarImage
+                src={user?.avatarUrl || "placeholder-user.jpg"}
+                alt={user?.name}
+              />
+              <AvatarFallback>{user?.name?.charAt(0) || "G"}</AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-60 md:w-72">
+            <DropdownMenuItem asChild>
+              <Link href="/">Home</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="#">Shorten</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="#">Contact</Link>
+            </DropdownMenuItem>
+
             {isLoggedIn && (
               <>
-                <Link
-                  className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
-                  href="/create"
-                >
-                  Create
-                </Link>
-                <Link
-                  className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
-                  href="/me/settings"
-                >
-                  Settings
-                </Link>
-                <Link
-                  className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
-                  href="/dashboard"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  className="flex items-center gap-2 text-sm font-medium hover:underline hover:underline-offset-4"
-                  href="/me/stories"
-                >
-                  Stories
-                </Link>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/create">Create</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/me/settings">Settings</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/me/stories">Stories</Link>
+                </DropdownMenuItem>
               </>
             )}
-          </div>
-          <div className="grid gap-2 border-t pt-4">
-            {isLoggedIn ? (
-              <div className="flex items-center gap-2">
-                <Avatar>
-                  <AvatarImage src={user.avatarUrl} alt={user.name} />
-                  <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col flex-1">
-                  <span className="text-md font-medium">{user.name}</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {user.email}
-                  </span>
-                </div>
 
-                <div className="w-10 h-10 flex-end">
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    onClick={handleLogout}
-                    className="text-sm font-medium w-full h-full"
-                  >
-                    <LogOut className="w-4" />
-                  </Button>
-                </div>
-              </div>
+            <DropdownMenuSeparator />
+
+            {isLoggedIn ? (
+              <>
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">
+                      {user?.name}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </>
             ) : (
               <>
-                <Button
-                  variant="outline"
-                  className="text-sm font-medium w-full"
-                  asChild
-                >
+                <DropdownMenuItem asChild>
                   <Link href="/auth/login" className="w-full">
-                    Login
+                    <Button variant="outline" className="w-full justify-center">
+                      Log in
+                    </Button>
                   </Link>
-                </Button>
-                <Button className="text-sm font-medium w-full">
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/auth/register" className="w-full">
-                    Register
+                    <Button className="w-full justify-center">Register</Button>
                   </Link>
-                </Button>
+                </DropdownMenuItem>
               </>
             )}
-          </div>
-        </SheetContent>
-      </Sheet>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </header>
   );
 }
