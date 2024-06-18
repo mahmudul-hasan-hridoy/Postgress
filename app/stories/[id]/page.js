@@ -5,6 +5,8 @@ import Image from "next/image";
 import { format } from "date-fns";
 import DOMPurify from "isomorphic-dompurify";
 import ClientSideHighlight from "./ClientSideHighlight";
+import ClapButton from "./ClapButton";
+import FollowButton from "./FollowButton";
 
 export const dynamic = "force-static";
 
@@ -17,17 +19,14 @@ export async function generateStaticParams() {
 
 async function getStory(id) {
   const { rows } = await pool.query(
-    "SELECT title, subtitle, author, content, tags, reading_time, created_at, links, main_image FROM stories WHERE id = $1",
+    "SELECT title, subtitle, author, content, tags, reading_time, created_at, links, main_image, claps FROM stories WHERE id = $1",
     [id],
   );
-
   if (rows.length === 0) {
     return null;
   }
-
   return rows[0];
 }
-
 export default async function Story({ params }) {
   const story = await getStory(params.id);
 
@@ -59,6 +58,10 @@ export default async function Story({ params }) {
               <p className="text-gray-800 dark:text-gray-400">
                 <span>{story.author[0].name}</span>
               </p>
+              <FollowButton
+                authorId={story.author[0].author_id}
+                initialIsFollowing={false}
+              />
             </div>
             <div className="flex items-center space-x-2 text-sm">
               <span className="post-date text-sm text-gray-500 dark:text-gray-300">
@@ -95,6 +98,9 @@ export default async function Story({ params }) {
             {tag}
           </span>
         ))}
+        <div className="mt-5">
+          <ClapButton storyId={params.id} initialClaps={story.claps} />
+        </div>
       </div>
     </div>
   );

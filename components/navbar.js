@@ -63,7 +63,7 @@ export default function Navbar() {
 
       <div className="flex items-center gap-4">
         <div className="hidden md:block w-72">
-          <Input type="text" placeholder="Search..." />
+          <Input type="text" placeholder="Search..." className="w-full" />
         </div>
         <Button variant="ghost" size="icon" className="md:hidden">
           <Search className="h-5 w-5" />
@@ -76,13 +76,13 @@ export default function Navbar() {
           <DropdownMenuTrigger asChild>
             <Avatar className="cursor-pointer">
               <AvatarImage
-                src={user?.avatarUrl || "placeholder-user.jpg"}
+                src={user?.avatarUrl || "/placeholder-user.jpg"}
                 alt={user?.name}
               />
-              <AvatarFallback>{user?.name?.charAt(0) || "G"}</AvatarFallback>
+              <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-60 md:w-72">
+          <DropdownMenuContent align="end" className="w-72 md:w-72">
             <DropdownMenuItem asChild>
               <Link href="/">Home</Link>
             </DropdownMenuItem>

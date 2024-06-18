@@ -19,9 +19,19 @@ function generateAvatar() {
   canvas.width = size;
   canvas.height = size;
 
+  // Function to generate a valid hex color code
+  function getRandomColor() {
+    let color = Math.floor(Math.random() * 16777215).toString(16);
+    // Ensure the color is exactly 6 characters long
+    while (color.length < 6) {
+      color = "0" + color;
+    }
+    return "#" + color;
+  }
+
   // Generate two random colors for the gradient
-  const color1 = "#" + Math.floor(Math.random() * 16777215).toString(16);
-  const color2 = "#" + Math.floor(Math.random() * 16777215).toString(16);
+  const color1 = getRandomColor();
+  const color2 = getRandomColor();
 
   // Create a gradient
   const gradient = context.createLinearGradient(0, 0, size, size);
@@ -33,6 +43,7 @@ function generateAvatar() {
 
   return canvas.toDataURL("image/png");
 }
+
 
 export default function Signup() {
   const router = useRouter();
