@@ -7,7 +7,7 @@ import Link from "next/link"
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-100 p-6 md:py-12 w-full dark:bg-gray-800">
+    <footer className="p-6 md:py-12 w-full dark:bg-gray-800">
       <div className="container max-w-7xl flex flex-col items-center gap-4 text-sm md:flex-row md:justify-between">
         <p className="text-gray-500 dark:text-gray-400">© 2024 URL Shortener. All rights reserved.</p>
         <div className="flex gap-4">

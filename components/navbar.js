@@ -5,7 +5,7 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { Link2, Search, Bell, LogOut } from "lucide-react";
+import { Search, Bell, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import Logo from "@/components/logo";
 
 export default function Navbar() {
   const router = useRouter();
@@ -51,14 +52,12 @@ export default function Navbar() {
     }
     setUser(null);
     setIsLoggedIn(false);
-    router.push("/auth/login");
   };
 
   return (
     <header className="flex h-16 w-full items-center justify-between px-4 md:px-6 border-b">
       <Link className="flex items-center gap-2" href="/">
-        <Link2 className="h-6 w-6" />
-        <span className="text-lg font-semibold">URL Shortener</span>
+        <Logo className="h-6 fill-current" />
       </Link>
 
       <div className="flex items-center gap-4">

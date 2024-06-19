@@ -12,6 +12,9 @@ const nextConfig = {
       {
         hostname: "firebasestorage.googleapis.com",
       },
+      {
+        hostname: "avatars.githubusercontent.com",
+      },
     ],
   },
   typescript: {

@@ -1,15 +1,17 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import Image from "next/image";
 import DOMPurify from "isomorphic-dompurify";
 import hljs from "highlight.js";
+import { toast } from "sonner";
 
 const PostPage = ({ params }) => {
+  const router = useRouter();
   const { id } = params;
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -17,15 +19,6 @@ const PostPage = ({ params }) => {
         const response = await fetch(`/api/posts/${id}`);
         const data = await response.json();
         setPost(data);
-
-        // Check if the current user is following the author
-        if (data.author) {
-          const followResponse = await fetch(
-            `/api/user/${data.author.id}/is-following`
-          );
-          const followData = await followResponse.json();
-          setIsFollowing(followData.isFollowing);
-        }
       } catch (error) {
         console.error("Error fetching post:", error);
       } finally {
@@ -44,31 +37,36 @@ const PostPage = ({ params }) => {
     }
   }, [post]);
 
-
-  const handleFollow = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (post.author) {
-        const response = await fetch(`/api/user/${post.author.id}/follow`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (response.ok) {
-          setIsFollowing(true);
-        }
-      }
-    } catch (error) {
-      console.error("Error following user:", error);
-    }
-  };
-
   const sanitizedContent = post ? DOMPurify.sanitize(post.content) : "";
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="animate-pulse">
+          <div className="mb-3">
+            <div className="h-12 bg-gray-300 dark:bg-gray-700 w-full rounded-lg"></div>
+          </div>
+          <div className="max-w-[300px] w-full flex items-center gap-3">
+            <div className="w-12 h-12 bg-gray-300 dark:bg-gray-700 rounded-full flex-shrink-0"></div>
+            <div className="w-full flex flex-col gap-2">
+              <div className="h-3 w-3/5 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-3 w-4/5 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+            </div>
+          </div>
+          <div className="aspect-video mt-5 w-full bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+          {[...Array(4)].map((_, index) => (
+            <div key={index} className="mt-10 space-y-3">
+              <div className="h-5 w-2/3 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-5 w-full bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-5 w-full bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-5 w-full bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-5 w-full bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+              <div className="h-5 w-full bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (!post) {
@@ -80,7 +78,7 @@ const PostPage = ({ params }) => {
       <h1 className="mb-3 mt-2 text-left text-2xl tracking-tight dark:text-white lg:text-4xl lg:leading-snug font-bold">
         {post.title}
       </h1>
-      <div className="mt-3 flex space-x-3 text-gray-500">
+      <div className="mt-3 flex space-x-3 text-gray-500 ">
         <div className="flex items-center gap-3">
           {post.author && post.author.avatarUrl && (
             <div className="relative h-8 w-8 overflow-hidden rounded-full flex-shrink-0">
@@ -98,26 +96,11 @@ const PostPage = ({ params }) => {
                 <span>{post.author ? post.author.name : "Unknown Author"}</span>
               </p>
               {/* Here add follow button */}
-              {post.author && (
-                <>
-                  {!isFollowing && (
-                    <button
-                      onClick={handleFollow}
-                      className="ml-3 text-green-800"
-                    >
-                      Follow
-                    </button>
-                  )}
-                  {isFollowing && (
-                    <span className="ml-3 text-gray-500">Following</span>
-                  )}
-                </>
-              )}
             </div>
             <div className="flex items-center space-x-2 text-sm">
               <span className="post-date text-sm text-gray-500 dark:text-gray-300">
                 <time dateTime={post.createdAt}>
-                  {format(new Date(post.createdAt), "MMMM d, yyyy")}
+                  {format(post.createdAt, "MMMM d, yyyy")}
                 </time>
               </span>
               <span className="flex items-center gap-1">

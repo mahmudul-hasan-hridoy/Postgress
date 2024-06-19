@@ -1,4 +1,3 @@
-// app/api/auth/github/callback/route.js
 import { NextResponse } from "next/server";
 import fetch from "node-fetch";
 import pool from "@/lib/db";
@@ -6,11 +5,8 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 
 // Function to generate a unique username from the name or GitHub username
-const generateUsername = async (baseName) => {
-  // Remove spaces and convert to lowercase
-  const baseUsername = baseName.replace(/\s+/g, "").toLowerCase();
-
-  let username = baseUsername;
+const generateUsername = async (baseUsername) => {
+  let username = baseUsername.toLowerCase().replace(/\s+/g, "");
   let counter = 1;
 
   const client = await pool.connect();
@@ -26,7 +22,7 @@ const generateUsername = async (baseName) => {
         return username;
       }
 
-      username = `${baseUsername}${counter}`;
+      username = `${baseUsername.toLowerCase().replace(/\s+/g, "")}${counter}`;
       counter++;
     }
   } finally {
@@ -116,10 +112,7 @@ export async function GET(req) {
     } else {
       isNewUser = true;
       // Generate a unique username
-      const username = await generateUsername(userData.name || userData.login);
-
-      // Generate a verification token
-      const verificationToken = uuidv4();
+      let username = await generateUsername(userData.login);
 
       // Store new user data in the database
       const now = new Date();
@@ -128,12 +121,12 @@ export async function GET(req) {
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING id, name, username, email, avatar_url, provider, verification_token, email_verified`,
         [
-          userData.name,
+          userData.name || userData.login, // Use GitHub username if name not available
           username,
           primaryEmail,
           userData.avatar_url,
           "github",
-          verificationToken,
+          uuidv4(), // Generate a verification token
           true, // GitHub emails are typically already verified
           now,
           now,
