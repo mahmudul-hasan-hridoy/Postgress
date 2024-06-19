@@ -53,7 +53,7 @@ export default function NewStory() {
         main_image: mainImageUrl,
       };
 
-      const response = await fetch("/api/stories/create-story", {
+      const response = await fetch("/api/posts/create-story", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

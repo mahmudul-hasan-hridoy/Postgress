@@ -14,6 +14,7 @@ import TablePlugin from '@ckeditor/ckeditor5-table/src/table';
 import CodeBlockPlugin from '@ckeditor/ckeditor5-code-block/src/codeblock';
 import HighlightPlugin from '@ckeditor/ckeditor5-highlight/src/highlight';
 import MediaEmbedPlugin from '@ckeditor/ckeditor5-media-embed/src/mediaembed';
+import CodePlugin from '@ckeditor/ckeditor5-basic-styles/src/code';
 
 export default class ClassicEditor extends ClassicEditorBase {}
 
@@ -27,12 +28,13 @@ ClassicEditor.builtinPlugins = [
     ListPlugin,
     ImagePlugin,
     ImageUploadPlugin,
-    ImageInsertPlugin, // Add this line
+    ImageInsertPlugin,
     BlockQuotePlugin,
     TablePlugin,
     CodeBlockPlugin,
     HighlightPlugin,
-    MediaEmbedPlugin
+    MediaEmbedPlugin,
+    CodePlugin 
 ];
 
 ClassicEditor.defaultConfig = {
@@ -47,11 +49,12 @@ ClassicEditor.defaultConfig = {
             'numberedList',
             '|',
             'uploadImage',
-            'insertImage', // Add this line
+            'insertImage',
             'mediaEmbed',
             'blockQuote',
             'insertTable',
             'codeBlock',
+            'code', 
             'highlight',
             '|',
             'undo',

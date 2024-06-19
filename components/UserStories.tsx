@@ -1,4 +1,6 @@
 // components/UserStories.tsx
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
 import Link from "next/link";

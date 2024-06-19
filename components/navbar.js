@@ -82,7 +82,7 @@ export default function Navbar() {
               <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-72 md:w-72">
+          <DropdownMenuContent align="end" className="w-72">
             <DropdownMenuItem asChild>
               <Link href="/">Home</Link>
             </DropdownMenuItem>
