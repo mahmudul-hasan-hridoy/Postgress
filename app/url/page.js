@@ -1,17 +1,14 @@
 "use client";
 import { useState } from "react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Clipboard, ClipboardCheck } from "lucide-react";
 import Cookies from "js-cookie";
 
 export default function Home() {
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
-  const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState(() => {
     const storedHistory = Cookies.get("urlHistory");

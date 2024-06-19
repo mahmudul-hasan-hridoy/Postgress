@@ -1,17 +1,14 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import Image from "next/image";
 import DOMPurify from "isomorphic-dompurify";
 import hljs from "highlight.js";
 
 const PostPage = ({ params }) => {
-  const router = useRouter();
   const { id } = params;
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const [isFollowing, setIsFollowing] = useState(false);
 
   useEffect(() => {
@@ -22,11 +19,13 @@ const PostPage = ({ params }) => {
         setPost(data);
 
         // Check if the current user is following the author
-        const followResponse = await fetch(
-          `/api/user/${data.author.id}/is-following`,
-        );
-        const followData = await followResponse.json();
-        setIsFollowing(followData.isFollowing);
+        if (data.author) {
+          const followResponse = await fetch(
+            `/api/user/${data.author.id}/is-following`
+          );
+          const followData = await followResponse.json();
+          setIsFollowing(followData.isFollowing);
+        }
       } catch (error) {
         console.error("Error fetching post:", error);
       } finally {
@@ -45,18 +44,21 @@ const PostPage = ({ params }) => {
     }
   }, [post]);
 
+
   const handleFollow = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/user/${post.author.id}/follow`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        setIsFollowing(true);
+      if (post.author) {
+        const response = await fetch(`/api/user/${post.author.id}/follow`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          setIsFollowing(true);
+        }
       }
     } catch (error) {
       console.error("Error following user:", error);
@@ -78,7 +80,7 @@ const PostPage = ({ params }) => {
       <h1 className="mb-3 mt-2 text-left text-2xl tracking-tight dark:text-white lg:text-4xl lg:leading-snug font-bold">
         {post.title}
       </h1>
-      <div className="mt-3 flex space-x-3 text-gray-500 ">
+      <div className="mt-3 flex space-x-3 text-gray-500">
         <div className="flex items-center gap-3">
           {post.author && post.author.avatarUrl && (
             <div className="relative h-8 w-8 overflow-hidden rounded-full flex-shrink-0">
@@ -96,21 +98,26 @@ const PostPage = ({ params }) => {
                 <span>{post.author ? post.author.name : "Unknown Author"}</span>
               </p>
               {/* Here add follow button */}
-              {!isFollowing && (
-                <button onClick={handleFollow} className="ml-3 text-green-800">
-                  Follow
-                </button>
-              )}
-              {isFollowing && (
-                <span className="ml-3 text-gray-500">
-                  Following
-                </span>
+              {post.author && (
+                <>
+                  {!isFollowing && (
+                    <button
+                      onClick={handleFollow}
+                      className="ml-3 text-green-800"
+                    >
+                      Follow
+                    </button>
+                  )}
+                  {isFollowing && (
+                    <span className="ml-3 text-gray-500">Following</span>
+                  )}
+                </>
               )}
             </div>
             <div className="flex items-center space-x-2 text-sm">
               <span className="post-date text-sm text-gray-500 dark:text-gray-300">
                 <time dateTime={post.createdAt}>
-                  {format(post.createdAt, "MMMM d, yyyy")}
+                  {format(new Date(post.createdAt), "MMMM d, yyyy")}
                 </time>
               </span>
               <span className="flex items-center gap-1">

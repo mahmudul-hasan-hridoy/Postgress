@@ -17,17 +17,15 @@ const generateUsername = async (baseName) => {
 
   try {
     while (true) {
-      // Check if username already exists
       const existingUser = await client.query(
         "SELECT * FROM users WHERE username = $1",
         [username],
       );
 
       if (existingUser.rows.length === 0) {
-        return username; // Found a unique username
+        return username;
       }
 
-      // Append counter to make it unique
       username = `${baseUsername}${counter}`;
       counter++;
     }
