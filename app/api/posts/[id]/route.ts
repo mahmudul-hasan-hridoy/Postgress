@@ -17,6 +17,7 @@ export const GET = async (
         p.main_image AS "mainImage",
         p.created_at AS "createdAt",
         p.updated_at AS "updatedAt",
+        p.reading_time,
         p.status,
         p.claps,
         p.comments_count AS "commentsCount",
