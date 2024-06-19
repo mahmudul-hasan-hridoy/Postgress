@@ -5,6 +5,37 @@ import sendVerificationEmail from "@/lib/sendVerificationEmail";
 import { storage } from "@/lib/firebase";
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 
+// Function to generate a unique username from the name
+const generateUsername = async (name) => {
+  // Remove spaces and convert to lowercase
+  const baseUsername = name.replace(/\s+/g, "").toLowerCase();
+
+  let username = baseUsername;
+  let counter = 1;
+
+  const client = await pool.connect();
+
+  try {
+    while (true) {
+      // Check if username already exists
+      const existingUser = await client.query(
+        "SELECT * FROM users WHERE username = $1",
+        [username],
+      );
+
+      if (existingUser.rows.length === 0) {
+        return username; // Found a unique username
+      }
+
+      // Append counter to make it unique
+      username = `${baseUsername}${counter}`;
+      counter++;
+    }
+  } finally {
+    client.release();
+  }
+};
+
 export const POST = async (req) => {
   const { name, email, password, avatarUrl } = await req.json();
 
@@ -24,6 +55,9 @@ export const POST = async (req) => {
         });
       }
 
+      // Generate username based on name
+      const username = await generateUsername(name);
+
       // Email/password sign-up
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
@@ -37,10 +71,10 @@ export const POST = async (req) => {
       console.log("Stored avatar URL:", storedAvatarUrl);
 
       const query =
-        "INSERT INTO users (id,name, email, password, avatar_url, verification_token, provider, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9) RETURNING id";
+        "INSERT INTO users (name, username, email, password, avatar_url, verification_token, provider, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9) RETURNING id";
       const values = [
-        uuidv4(),
         name,
+        username,
         email,
         hashedPassword,
         storedAvatarUrl,

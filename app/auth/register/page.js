@@ -44,7 +44,6 @@ function generateAvatar() {
   return canvas.toDataURL("image/png");
 }
 
-
 export default function Signup() {
   const router = useRouter();
   const [name, setname] = useState("");

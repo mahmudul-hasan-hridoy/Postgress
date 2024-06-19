@@ -17,7 +17,7 @@ export async function GET(request) {
     const userId = decoded.id;
 
     const query =
-      "SELECT id, name, email, avatar_url,updated_at FROM users WHERE id = $1";
+      "SELECT id, name, username, email, avatar_url,bio, updated_at FROM users WHERE id = $1";
     const values = [userId];
     const { rows } = await pool.query(query, values);
 
@@ -25,12 +25,14 @@ export async function GET(request) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const { id, name, email, avatar_url } = rows[0];
+    const { id, name, username, email, avatar_url, bio } = rows[0];
     return NextResponse.json({
       id,
       name,
+      username,
       email,
       avatarUrl: avatar_url,
+      bio,
     });
   } catch (error) {
     console.error(error);

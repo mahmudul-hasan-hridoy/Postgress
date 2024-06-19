@@ -6,12 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import TagInput from "@/components/TagInput";
-import PublicationSelect from "@/components/PublicationSelect";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "@/lib/firebase";
-
 
 const ContentEditor = dynamic(() => import("@/components/ContentEditor"), {
   ssr: false,
@@ -19,10 +17,8 @@ const ContentEditor = dynamic(() => import("@/components/ContentEditor"), {
 
 export default function NewStory() {
   const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
   const [content, setContent] = useState("");
   const [tags, setTags] = useState([]);
-  const [publicationId, setPublicationId] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,8 +26,6 @@ export default function NewStory() {
 
   const handleContentChange = (newContent) => setContent(newContent);
   const handleTagChange = (newTags) => setTags(newTags);
-  const handlePublicationChange = (newPublicationId) =>
-    setPublicationId(newPublicationId);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,6 +33,7 @@ export default function NewStory() {
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("User not authenticated");
+      setLoading(false);
       return;
     }
 
@@ -53,10 +48,8 @@ export default function NewStory() {
 
       const storyData = {
         title,
-        subtitle,
         content,
         tags,
-        publicationId,
         main_image: mainImageUrl,
       };
 
@@ -74,7 +67,7 @@ export default function NewStory() {
         router.push("/");
       } else {
         const errorData = await response.json();
-        toast.error(errorData.message);
+        toast.error(errorData.message || "Failed to create story");
       }
     } catch (err) {
       toast.error("An error occurred while creating the story");
@@ -98,16 +91,6 @@ export default function NewStory() {
           />
         </div>
         <div>
-          <Label className="block mb-2" htmlFor="subtitle">
-            Subtitle
-          </Label>
-          <Input
-            id="subtitle"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-          />
-        </div>
-        <div>
           <Label className="block mb-2" htmlFor="mainImage">
             Main Image
           </Label>
@@ -115,6 +98,7 @@ export default function NewStory() {
             id="mainImage"
             type="file"
             accept="image/*"
+            
             onChange={(e) => setImageFile(e.target.files[0])}
           />
         </div>

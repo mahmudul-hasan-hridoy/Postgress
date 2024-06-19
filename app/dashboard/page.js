@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import Image from "next/image";
 import { FaUserCircle } from "react-icons/fa";
 
 export default function Dashboard() {
@@ -55,39 +55,37 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900">
-      <main className="flex-1 p-6">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-lg shadow-md p-6 dark:bg-gray-800">
-            <div className="flex items-center mb-6">
-              <img
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center py-10">
+      <div className="bg-white shadow-md rounded-lg p-6 max-w-lg w-full">
+        <div className="flex items-center space-x-4">
+          {user.avatarUrl ? (
+            <div className="w-16 h-16 relative rounded-full overflow-hidden">
+              <Image
                 src={user.avatarUrl}
-                alt="Profile Picture"
-                className="w-16 h-16 rounded-full mr-4"
+                alt="User Avatar"
+                layout="fill"
+                objectFit="cover"
               />
-              <div>
-                <h2 className="text-2xl font-semibold">{user.name}</h2>
-                <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
-              </div>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-2">User Information</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-1">
-                    Username
-                  </p>
-                  <p className="text-lg font-medium">{user.name}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600 dark:text-gray-400 mb-1">Email</p>
-                  <p className="text-lg font-medium">{user.email}</p>
-                </div>
-              </div>
-            </div>
+          ) : (
+            <FaUserCircle className="w-16 h-16 text-gray-400" />
+          )}
+          <div>
+            <h2 className="text-2xl font-semibold">{user.name}</h2>
+            <p className="text-gray-500">@{user.username}</p>
           </div>
         </div>
-      </main>
+        <div className="mt-6">
+          <p className="text-lg">
+            <strong>Email:</strong> {user.email}
+          </p>
+          {user.bio && (
+            <p className="mt-4">
+              <strong>Bio:</strong> {user.bio}
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

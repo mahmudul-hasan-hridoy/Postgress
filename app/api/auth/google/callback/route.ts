@@ -5,6 +5,35 @@ import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import { NextResponse } from "next/server";
 
+// Function to generate a unique username from the name
+const generateUsername = async (name) => {
+  // Remove spaces and convert to lowercase
+  const baseUsername = name.replace(/\s+/g, "").toLowerCase();
+
+  let username = baseUsername;
+  let counter = 1;
+
+  const client = await pool.connect();
+
+  try {
+    while (true) {
+      const existingUser = await client.query(
+        "SELECT * FROM users WHERE username = $1",
+        [username],
+      );
+
+      if (existingUser.rows.length === 0) {
+        return username; 
+      }
+
+      username = `${baseUsername}${counter}`;
+      counter++;
+    }
+  } finally {
+    client.release();
+  }
+};
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
@@ -41,23 +70,27 @@ export async function GET(req) {
       }
     } else {
       isNewUser = true;
+
+      // Generate a unique username
+      const username = await generateUsername(name);
+
       // Generate a verification token
       const verificationToken = uuidv4();
 
       // Store new user data in the database
       const now = new Date();
       const { rows: newRows } = await pool.query(
-        `INSERT INTO users (id, name, email, avatar_url, provider, verification_token, email_verified, created_at, updated_at)
+        `INSERT INTO users (name, username, email, avatar_url, provider, verification_token, email_verified, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-         RETURNING id, name, email, avatar_url, provider, verification_token, email_verified`,
+         RETURNING id, name, username, email, avatar_url, provider, verification_token, email_verified`,
         [
-          uuidv4(),
           name,
+          username,
           email,
           picture,
           "google",
           verificationToken,
-          true, // Google emails are typically already verified
+          true, 
           now,
           now,
         ],
@@ -70,6 +103,7 @@ export async function GET(req) {
       {
         id: user.id,
         name: user.name,
+        username: user.username,
         email: user.email,
         avatarUrl: user.avatar_url,
       },
