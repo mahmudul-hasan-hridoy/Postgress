@@ -1,12 +1,12 @@
 // app/api/posts/[id]/route.ts
+import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 
 export const GET = async (
   request: Request,
-  context: { params: { id: string } },
+  context: { params: { id: string } }
 ) => {
   const { id } = context.params;
-
   try {
     const queryText = `
       SELECT
@@ -31,7 +31,26 @@ export const GET = async (
           SELECT t.name FROM tags t
           JOIN post_tags pt ON pt.tag_id = t.id
           WHERE pt.post_id = p.id
-        ) AS tags
+        ) AS tags,
+        (
+          SELECT COALESCE(json_agg(
+            json_build_object(
+              'id', c.id,
+              'content', c.content,
+              'createdAt', c.created_at,
+              'userId', c.user_id,
+              'author', json_build_object(
+                'id', cuser.id,
+                'name', cuser.name,
+                'username', cuser.username,
+                'avatarUrl', cuser.avatar_url
+              )
+            )
+          ), '[]') AS comments
+          FROM comments c
+          JOIN users cuser ON c.user_id = cuser.id
+          WHERE c.post_id = p.id
+        ) AS comments
       FROM posts p
       JOIN users u ON p.user_id = u.id
       WHERE p.id = $1
@@ -40,7 +59,7 @@ export const GET = async (
     const { rows } = await pool.query(queryText, [id]);
 
     if (rows.length === 0) {
-      return new Response(JSON.stringify({ error: "Post not found" }), {
+      return new NextResponse(JSON.stringify({ error: "Post not found" }), {
         status: 404,
         headers: {
           "Content-Type": "application/json",
@@ -48,7 +67,7 @@ export const GET = async (
       });
     }
 
-    return new Response(JSON.stringify(rows[0]), {
+    return new NextResponse(JSON.stringify(rows[0]), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -56,14 +75,14 @@ export const GET = async (
     });
   } catch (error) {
     console.error("Error fetching post:", error);
-    return new Response(
+    return new NextResponse(
       JSON.stringify({ error: "An error occurred while fetching the post" }),
       {
         status: 500,
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
   }
 };

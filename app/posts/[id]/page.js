@@ -6,19 +6,29 @@ import Image from "next/image";
 import DOMPurify from "isomorphic-dompurify";
 import hljs from "highlight.js";
 import { toast } from "sonner";
+import CommentSection from "@/components/CommentSection";
 
 const PostPage = ({ params }) => {
   const router = useRouter();
   const { id } = params;
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await fetch(`/api/posts/${id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch post");
+        }
         const data = await response.json();
         setPost(data);
+        if (Array.isArray(data.comments)) {
+          setComments(data.comments);
+        } else {
+          setComments([]);
+        }
       } catch (error) {
         console.error("Error fetching post:", error);
       } finally {
@@ -38,6 +48,10 @@ const PostPage = ({ params }) => {
   }, [post]);
 
   const sanitizedContent = post ? DOMPurify.sanitize(post.content) : "";
+
+  const handleCommentSubmit = (newComment) => {
+    setComments((prevComments) => [...prevComments, newComment]);
+  };
 
   if (loading) {
     return (
@@ -95,12 +109,12 @@ const PostPage = ({ params }) => {
               <p className="text-gray-800 dark:text-gray-400">
                 <span>{post.author ? post.author.name : "Unknown Author"}</span>
               </p>
-              {/* Here add follow button */}
+              {/* Add follow button here */}
             </div>
             <div className="flex items-center space-x-2 text-sm">
               <span className="post-date text-sm text-gray-500 dark:text-gray-300">
                 <time dateTime={post.createdAt}>
-                  {format(post.createdAt, "MMMM d, yyyy")}
+                  {format(new Date(post.createdAt), "MMMM d, yyyy")}
                 </time>
               </span>
               <span className="flex items-center gap-1">
@@ -137,14 +151,16 @@ const PostPage = ({ params }) => {
             </span>
           ))}
       </div>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center mb-4">
         <span className="text-gray-500 dark:text-gray-400 text-sm">
           {post.claps} claps
         </span>
-        <span className="text-gray-500 dark:text-gray-400 text-sm">
-          {post.commentsCount} comments
-        </span>
       </div>
+      <CommentSection
+        comments={comments}
+        postId={post.id}
+        onCommentSubmit={handleCommentSubmit}
+      />
     </div>
   );
 };

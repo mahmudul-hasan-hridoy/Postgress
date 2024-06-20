@@ -42,17 +42,27 @@ export const POST = async (req: NextRequest) => {
       const tagQuery = `SELECT id FROM tags WHERE name = $1`;
       const tagResult = await pool.query(tagQuery, [tagName]);
 
+      let tagId;
       if (tagResult.rows.length > 0) {
-        const tagId = tagResult.rows[0].id;
-
-        // Insert into post_tags if tag exists
-        const postTagQuery = `
-          INSERT INTO post_tags (post_id, tag_id)
-          VALUES ($1, $2)
-          ON CONFLICT DO NOTHING;
+        tagId = tagResult.rows[0].id;
+      } else {
+        // Insert new tag into tags table
+        const insertTagQuery = `
+          INSERT INTO tags (name)
+          VALUES ($1)
+          RETURNING id;
         `;
-        await pool.query(postTagQuery, [postId, tagId]);
+        const insertTagResult = await pool.query(insertTagQuery, [tagName]);
+        tagId = insertTagResult.rows[0].id;
       }
+
+      // Insert into post_tags
+      const postTagQuery = `
+        INSERT INTO post_tags (post_id, tag_id)
+        VALUES ($1, $2)
+        ON CONFLICT DO NOTHING;
+      `;
+      await pool.query(postTagQuery, [postId, tagId]);
     }
 
     return NextResponse.json(

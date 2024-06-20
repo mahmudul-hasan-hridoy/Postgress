@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -24,16 +24,26 @@ export default function NewStory() {
 
   const router = useRouter();
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        router.push("/auth/login");
+      }
+    }
+  }, [router]);
+
   const handleContentChange = (newContent) => setContent(newContent);
   const handleTagChange = (newTags) => setTags(newTags);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("User not authenticated");
-      setLoading(false);
+      toast.error("You need to be logged in to create a story");
+      router.push("/auth/login");
       return;
     }
 
@@ -52,6 +62,7 @@ export default function NewStory() {
         tags,
         main_image: mainImageUrl,
       };
+
 
       const response = await fetch("/api/posts/create-story", {
         method: "POST",
@@ -98,7 +109,6 @@ export default function NewStory() {
             id="mainImage"
             type="file"
             accept="image/*"
-            
             onChange={(e) => setImageFile(e.target.files[0])}
           />
         </div>
