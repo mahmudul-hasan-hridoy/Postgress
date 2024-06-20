@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, Trash2 } from "lucide-react";
 
 interface User {
   id: number;
@@ -38,7 +38,7 @@ const UserStories: React.FC = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          throw new Error("User not authenticated");
+          return router.push("/auth/login");
         }
 
         const response = await fetch("/api/posts/get-user-posts", {
@@ -134,9 +134,10 @@ const UserStories: React.FC = () => {
                 className="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20"
               >
                 <button
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:hover:bg-red-900"
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100 dark:hover:bg-red-900 flex gap-1"
                   onClick={() => handleDelete(post.id)}
                 >
+                  <Trash2 className="w-4 h-4 mr-2" />
                   Delete
                 </button>
               </div>

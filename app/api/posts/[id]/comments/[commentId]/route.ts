@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import jwt from "jsonwebtoken";
+
 export const runtime = "nodejs";
+
 export const DELETE = async (
   request: NextRequest,
   context: { params: { id: string; commentId: string } },
@@ -31,7 +33,6 @@ export const DELETE = async (
     `;
     const { rows } = await pool.query(checkCommentQuery, [commentId, id]);
     console.log("Comment check result:", rows);
-    console.log("User ID from token:", userId);
     if (rows.length === 0) {
       console.log("Comment not found");
       return NextResponse.json({ error: "Comment not found" }, { status: 404 });

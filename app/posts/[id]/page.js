@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import Image from "next/image";
 import DOMPurify from "isomorphic-dompurify";
 import hljs from "highlight.js";
@@ -53,6 +54,22 @@ const PostPage = ({ params }) => {
     setComments((prevComments) => [...prevComments, newComment]);
   };
 
+  const handleClap = async () => {
+    try {
+      const response = await fetch(`/api/posts/${id}/clap`, {
+        method: "POST",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to clap");
+      }
+      setPost((prevPost) => ({ ...prevPost, claps: prevPost.claps + 1 }));
+      toast.success("Clap added successfully");
+    } catch (error) {
+      console.error("Error clapping post:", error);
+      toast.error("Failed to clap");
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -84,7 +101,17 @@ const PostPage = ({ params }) => {
   }
 
   if (!post) {
-    return <div>Post not found</div>;
+    return (
+      <div className="flex justify-center h-screen">
+        <div className="flex items-center flex-col gap-1">
+          <h1 className="text-center text-lg font-md">Ooops... Error 404</h1>
+          <span className="text-center">
+            Sorry, but the page you are looking for doesn_t exist.
+          </span>
+          <Link href="/" className="bg-black p-4 text-white">HOMEPAGE</Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -109,12 +136,11 @@ const PostPage = ({ params }) => {
               <p className="text-gray-800 dark:text-gray-400">
                 <span>{post.author ? post.author.name : "Unknown Author"}</span>
               </p>
-              {/* Add follow button here */}
             </div>
             <div className="flex items-center space-x-2 text-sm">
               <span className="post-date text-sm text-gray-500 dark:text-gray-300">
-                <time dateTime={post.createdAt}>
-                  {format(new Date(post.createdAt), "MMMM d, yyyy")}
+                <time dateTime={post?.createdAt}>
+                  {format(parseISO(post?.createdAt), "MMMM d, yyyy")}
                 </time>
               </span>
               <span className="flex items-center gap-1">
@@ -152,9 +178,12 @@ const PostPage = ({ params }) => {
           ))}
       </div>
       <div className="flex items-center mb-4">
-        <span className="text-gray-500 dark:text-gray-400 text-sm">
+        <button
+          onClick={handleClap}
+          className="text-gray-500 hover:text-gray-800 dark:text-gray-400 text-sm"
+        >
           {post.claps} claps
-        </span>
+        </button>
       </div>
       <CommentSection
         comments={comments}

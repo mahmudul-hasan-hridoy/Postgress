@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 import jwt from "jsonwebtoken";
 import readingTime from "reading-time";
+import slugify from "slugify";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -20,11 +21,11 @@ export const POST = async (req: NextRequest) => {
     const userId = decoded.id;
 
     const stats = readingTime(content);
+    const slug = slugify(title, { lower: true, strict: true });
 
-    // Insert story into database
     const queryText = `
-      INSERT INTO posts (user_id, title, content, main_image, created_at, updated_at, reading_time)
-      VALUES ($1, $2, $3, $4, NOW(), NOW(), $5)
+      INSERT INTO posts (user_id, title, content, main_image, created_at, updated_at, reading_time, slug)
+      VALUES ($1, $2, $3, $4, NOW(), NOW(), $5, $6)
       RETURNING id;
     `;
     const { rows } = await pool.query(queryText, [
@@ -33,36 +34,25 @@ export const POST = async (req: NextRequest) => {
       content,
       main_image,
       Math.ceil(stats.minutes),
+      slug,
     ]);
     const postId = rows[0].id;
 
     // Insert tags into post_tags junction table
     for (const tagName of tags) {
-      // Check if tag exists
       const tagQuery = `SELECT id FROM tags WHERE name = $1`;
       const tagResult = await pool.query(tagQuery, [tagName]);
 
-      let tagId;
       if (tagResult.rows.length > 0) {
-        tagId = tagResult.rows[0].id;
-      } else {
-        // Insert new tag into tags table
-        const insertTagQuery = `
-          INSERT INTO tags (name)
-          VALUES ($1)
-          RETURNING id;
-        `;
-        const insertTagResult = await pool.query(insertTagQuery, [tagName]);
-        tagId = insertTagResult.rows[0].id;
-      }
+        const tagId = tagResult.rows[0].id;
 
-      // Insert into post_tags
-      const postTagQuery = `
-        INSERT INTO post_tags (post_id, tag_id)
-        VALUES ($1, $2)
-        ON CONFLICT DO NOTHING;
-      `;
-      await pool.query(postTagQuery, [postId, tagId]);
+        const postTagQuery = `
+          INSERT INTO post_tags (post_id, tag_id)
+          VALUES ($1, $2)
+          ON CONFLICT DO NOTHING;
+        `;
+        await pool.query(postTagQuery, [postId, tagId]);
+      }
     }
 
     return NextResponse.json(
@@ -80,5 +70,3 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
-
-export const runtime = "nodejs";

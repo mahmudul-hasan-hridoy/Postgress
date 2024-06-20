@@ -131,14 +131,13 @@ const StoryList: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between mt-1">
-            <div>
-              <div className="mt-2 flex items-center tags-container">
-                {post.tag && (
-                  <span className="tag-link bg-[#f4f4f4] dark:bg-gray-700 text-[#333] dark:text-gray-300 ml-2">
-                    {post.tag}
-                  </span>
-                )}
-              </div>
+            <div className="flex items-center">
+              {post.tag && (
+                <span className="tag-link bg-[#f4f4f4] dark:bg-gray-700 text-[#333] dark:text-gray-300 ml-2">
+                  {post.tag}
+                </span>
+              )}
+
               <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                 {post.reading_time} min read
               </span>
