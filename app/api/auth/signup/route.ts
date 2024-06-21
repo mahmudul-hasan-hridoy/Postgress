@@ -4,6 +4,7 @@ import pool from "@/lib/db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import sendVerificationEmail from "@/lib/sendVerificationEmail";
 import { storage } from "@/lib/firebase";
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 
@@ -84,6 +85,7 @@ export async function POST(req) {
       );
 
       const newUser = result.rows[0];
+      await sendVerificationEmail(email, verificationToken);
 
       // Generate JWT token
       const token = jwt.sign(
