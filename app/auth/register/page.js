@@ -93,26 +93,6 @@ export default function Signup() {
     }
   };
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const url = new URL(window.location.href);
-      const token = url.searchParams.get("token");
-      const error = url.searchParams.get("error");
-      const exist = url.searchParams.get("exist");
-
-      if (token) {
-        localStorage.setItem("token", token);
-        toast.success("Sign-up successful! Now verify your email.");
-        router.push("/");
-      } else if (exist) {
-        toast.error(exist);
-      } else if (error) {
-        console.error(error);
-        toast.error(error);
-      }
-    }
-  }, [router]);
-
   const handleGitHubLogin = () => {
     const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/github/callback`;
     const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
