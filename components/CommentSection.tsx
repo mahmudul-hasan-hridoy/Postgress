@@ -3,7 +3,9 @@ import { parseISO, format } from "date-fns";
 import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
 import { EllipsisVertical } from "lucide-react";
-import { Toggle } from "@/components/ui/toggle";
+import { Button } from "@/components/ui/button";
+import LoginModal from "./LoginModal";
+import { getGoogleAuthUrl } from "@/lib/google-auth";
 
 interface Comment {
   id: number;
@@ -31,12 +33,17 @@ const CommentSection: React.FC<CommentSectionProps> = ({
   const [comment, setComment] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState<number | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       const decodedToken: { id: number } = jwtDecode(token);
       setUserId(decodedToken.id);
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
     }
   }, []);
 
@@ -93,25 +100,55 @@ const CommentSection: React.FC<CommentSectionProps> = ({
     }
   };
 
+  const handleLogin = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  const handleGoogleSignUp = async () => {
+    try {
+      const googleAuthUrl = await getGoogleAuthUrl();
+      window.location.href = googleAuthUrl;
+    } catch (error) {
+      console.error("Error getting Google auth URL:", error);
+      toast.error("An error occurred while signing up with Google.");
+    }
+  };
+
+  const handleGitHubLogin = () => {
+    const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/github/callback`;
+    const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+    const scope = "user:email";
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    window.location.href = authUrl;
+  };
+
   return (
     <div className="comments">
       <h2 className="text-xl font-bold mb-2">Comments</h2>
-      <form onSubmit={handleCommentSubmit} className="mb-4">
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-          rows={4}
-          placeholder="Write a comment..."
-          required
-        />
-        <button
-          type="submit"
-          className="w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Add Comment
-        </button>
-      </form>
+      {isLoggedIn ? (
+        <form onSubmit={handleCommentSubmit} className="mb-4">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+            rows={4}
+            placeholder="Write a comment..."
+            required
+          />
+          <button
+            type="submit"
+            className="w-full mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Add Comment
+          </button>
+        </form>
+      ) : (
+        <div className="mb-4">
+          <Button onClick={handleLogin} className="w-full">
+            Login to Comment
+          </Button>
+        </div>
+      )}
       {comments.length === 0 && <p className="text-center">No comments yet.</p>}
       {comments.length > 0 &&
         comments.map((comment) => (
@@ -123,8 +160,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({
               <div>
                 <p className="text-xs text-gray-400 mt-1">
                   {comment.author.name} on{" "}
-                  <time dateTime={comment?.createdAt}>
-                    {format(parseISO(comment?.createdAt), "MMMM d, yyyy")}
+                  <time dateTime={comment.createdAt}>
+                    {format(parseISO(comment.createdAt), "MMMM d, yyyy")}
                   </time>
                 </p>
                 <p className="text-gray-600">{comment.content}</p>
@@ -168,6 +205,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({
             </div>
           </div>
         ))}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        handleGoogleSignUp={handleGoogleSignUp}
+        handleGitHubLogin={handleGitHubLogin}
+      />
     </div>
   );
 };

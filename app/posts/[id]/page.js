@@ -144,7 +144,7 @@ const PostPage = ({ params }) => {
                 </time>
               </span>
               <span className="flex items-center gap-1">
-                · {post.reading_time} min read
+                · {post?.reading_time} min read
               </span>
             </div>
           </div>

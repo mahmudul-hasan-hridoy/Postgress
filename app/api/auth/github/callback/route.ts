@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
+// app/auth/github/callback/route.js
 import fetch from "node-fetch";
 import pool from "@/lib/db";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import { NextResponse } from "next/server";
 
-// Function to generate a unique username from the name or GitHub username
+// Function to generate a unique username from the GitHub username or name
 const generateUsername = async (baseUsername) => {
   let username = baseUsername.toLowerCase().replace(/\s+/g, "");
   let counter = 1;
-
   const client = await pool.connect();
 
   try {
@@ -30,6 +30,59 @@ const generateUsername = async (baseUsername) => {
   }
 };
 
+// Function to fetch GitHub user details
+const getGitHubUser = async (code) => {
+  const clientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+  const tokenUrl = "https://github.com/login/oauth/access_token";
+  const userUrl = "https://api.github.com/user";
+  const emailUrl = "https://api.github.com/user/emails";
+
+  // Exchange code for access token
+  const tokenResponse = await fetch(tokenUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+    }),
+  });
+  const tokenData = await tokenResponse.json();
+  if (!tokenData.access_token) {
+    throw new Error("Failed to retrieve access token");
+  }
+  const accessToken = tokenData.access_token;
+
+  // Fetch user data
+  const userResponse = await fetch(userUrl, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+    },
+  });
+  const userData = await userResponse.json();
+
+  // Fetch user emails
+  const emailResponse = await fetch(emailUrl, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+    },
+  });
+  const emailData = await emailResponse.json();
+  const primaryEmail = emailData.find((email) => email.primary).email;
+
+  return {
+    email: primaryEmail,
+    picture: userData.avatar_url,
+    name: userData.name || userData.login,
+  };
+};
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
@@ -40,57 +93,12 @@ export async function GET(req) {
     );
   }
 
-  const clientId = `${process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID}`;
-  const clientSecret = `${process.env.GITHUB_CLIENT_SECRET}`;
-  const tokenUrl = "https://github.com/login/oauth/access_token";
-  const userUrl = "https://api.github.com/user";
-  const emailUrl = "https://api.github.com/user/emails";
-
   try {
-    // Exchange code for access token
-    const tokenResponse = await fetch(tokenUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code,
-      }),
-    });
-    const tokenData = await tokenResponse.json();
-    if (!tokenData.access_token) {
-      return NextResponse.json(
-        { error: "Failed to retrieve access token" },
-        { status: 400 },
-      );
-    }
-    const accessToken = tokenData.access_token;
-
-    // Fetch user data
-    const userResponse = await fetch(userUrl, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
-      },
-    });
-    const userData = await userResponse.json();
-
-    // Fetch user emails
-    const emailResponse = await fetch(emailUrl, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        Accept: "application/json",
-      },
-    });
-    const emailData = await emailResponse.json();
-    const primaryEmail = emailData.find((email) => email.primary).email;
+    const { email, picture, name } = await getGitHubUser(code);
 
     // Check if the user already exists
     const { rows } = await pool.query("SELECT * FROM users WHERE email = $1", [
-      primaryEmail,
+      email,
     ]);
 
     let user;
@@ -100,11 +108,11 @@ export async function GET(req) {
       user = rows[0];
       if (user.provider !== "github") {
         const redirectUrl = new URL(
-          "/auth/register",
+          "/m/callback/github",
           process.env.NEXT_PUBLIC_BASE_URL,
         );
         redirectUrl.searchParams.set(
-          "exist",
+          "error",
           "Email already exists with a different provider",
         );
         return NextResponse.redirect(redirectUrl.toString());
@@ -112,8 +120,9 @@ export async function GET(req) {
     } else {
       isNewUser = true;
       // Generate a unique username
-      let username = await generateUsername(userData.login);
-
+      const username = await generateUsername(name);
+      // Generate a verification token
+      const verificationToken = uuidv4();
       // Store new user data in the database
       const now = new Date();
       const { rows: newRows } = await pool.query(
@@ -121,13 +130,13 @@ export async function GET(req) {
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING id, name, username, email, avatar_url, provider, verification_token, email_verified`,
         [
-          userData.name || userData.login, // Use GitHub username if name not available
+          name,
           username,
-          primaryEmail,
-          userData.avatar_url,
+          email,
+          picture,
           "github",
-          uuidv4(), // Generate a verification token
-          true, // GitHub emails are typically already verified
+          verificationToken,
+          true,
           now,
           now,
         ],
@@ -148,24 +157,22 @@ export async function GET(req) {
       { expiresIn: "7d" },
     );
 
-    // Redirect to the appropriate frontend page with the token
-    const redirectUrl = new URL(
-      isNewUser ? "/auth/register" : "/auth/login",
+    // Redirect to the callback page with the token
+    const callbackUrl = new URL(
+      "/m/callback/github",
       process.env.NEXT_PUBLIC_BASE_URL,
     );
-    redirectUrl.searchParams.set("token", token);
-
-    return NextResponse.redirect(redirectUrl.toString());
+    callbackUrl.searchParams.set("token", token);
+    callbackUrl.searchParams.set("isNewUser", isNewUser.toString());
+    return NextResponse.redirect(callbackUrl.toString());
   } catch (error) {
     console.error("Error during GitHub OAuth:", error);
-
     // Redirect to the frontend with an error message
     const redirectUrl = new URL(
-      "/auth/login",
+      "/m/callback/github",
       process.env.NEXT_PUBLIC_BASE_URL,
     );
     redirectUrl.searchParams.set("error", "Failed to authenticate with GitHub");
-
     return NextResponse.redirect(redirectUrl.toString());
   }
 }
