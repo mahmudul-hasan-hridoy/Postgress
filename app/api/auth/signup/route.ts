@@ -1,14 +1,12 @@
 // app/api/auth/signup/route.js
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import sendVerificationEmail from "@/lib/sendVerificationEmail";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 import { storage } from "@/lib/firebase";
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 
-// Function to generate a unique username from the name
 const generateUsername = async (name) => {
   // Remove spaces and convert to lowercase
   const baseUsername = name.replace(/\s+/g, "").toLowerCase();
@@ -41,51 +39,53 @@ const generateUsername = async (name) => {
 
 export async function POST(req) {
   try {
-    const { name, email, password, avatarUrl } = await req.json();
+    const { email, password, name, avatarUrl } = await req.json();
 
     const client = await pool.connect();
     try {
-      // Check if user already exists
-      const existingUser = await client.query(
-        "SELECT * FROM users WHERE email = $1",
+      // Check if the email exists in pending_users
+      const pendingResult = await client.query(
+        "SELECT * FROM pending_users WHERE email = $1",
         [email],
       );
-      if (existingUser.rows.length > 0) {
+
+      if (pendingResult.rows.length === 0) {
         return NextResponse.json(
-          { error: "User already exists" },
+          { error: "Email not found or already verified" },
           { status: 400 },
         );
       }
 
       const username = await generateUsername(name);
       const verificationToken = uuidv4();
-      // Upload the avatar to Firebase Storage
-      const avatarRef = ref(storage, `avatars/${username}.png`);
+      const avatarRef = ref(storage, `avatars/${verificationToken}.png`);
       const avatarBuffer = Buffer.from(avatarUrl.split(",")[1], "base64");
       await uploadString(avatarRef, avatarBuffer.toString("base64"), "base64");
       const storedAvatarUrl = await getDownloadURL(avatarRef);
       console.log("Stored avatar URL:", storedAvatarUrl);
 
       // Hash the password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Insert new user
+      // Insert the new user
       const result = await client.query(
-        "INSERT INTO users (name, username, email, password, avatar_url,provider, verification_token) VALUES ($1, $2, $3, $4, $5, $6,$7) RETURNING id, email, name",
+        "INSERT INTO users (email, password, name, username,avatar_url,verification_token,provider) VALUES ($1, $2, $3, $4,$5,$6,$7) RETURNING *",
         [
-          name,
-          username,
           email,
           hashedPassword,
+          name,
+          username,
           avatarUrl,
-          "email",
           verificationToken,
+          "email",
         ],
       );
 
       const newUser = result.rows[0];
-      await sendVerificationEmail(email, verificationToken);
+
+      // Remove the email from pending_users
+      await client.query("DELETE FROM pending_users WHERE email = $1", [email]);
 
       // Generate JWT token
       const token = jwt.sign(

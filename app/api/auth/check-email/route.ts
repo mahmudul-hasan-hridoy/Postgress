@@ -4,11 +4,8 @@ import pool from "@/lib/db";
 import sendEmail from "@/lib/sendEmail";
 import crypto from "crypto";
 
-// Function to generate a 6-digit token
 function generate6DigitToken() {
-  const buffer = crypto.randomBytes(3);
-  const token = buffer.toString("hex").slice(0, 6);
-  return token;
+  return crypto.randomBytes(3).toString("hex").slice(0, 6);
 }
 
 export async function POST(req) {
@@ -24,28 +21,32 @@ export async function POST(req) {
       );
       const userExists = result.rows.length > 0;
 
+      // Generate and store verification code
+      const verificationCode = generate6DigitToken();
       if (userExists) {
-        // Generate and store verification code
-        const verificationCode = generate6DigitToken();
         await client.query(
           "UPDATE users SET verification_code = $1 WHERE email = $2",
           [verificationCode, email],
         );
-
-        // Send verification email
-        await sendEmail({
-          to: email,
-          subject: "Your Verification Code",
-          html: `Your verification code is: ${verificationCode}`,
-        });
-
-        return NextResponse.json({
-          exists: true,
-          message: "Verification code sent",
-        });
       } else {
-        return NextResponse.json({ exists: false, message: "New user" });
+        // Store the email and verification code for potential new users
+        await client.query(
+          "INSERT INTO pending_users (email, verification_code) VALUES ($1, $2)",
+          [email, verificationCode],
+        );
       }
+
+      // Send verification email
+      await sendEmail({
+        to: email,
+        subject: "Your Verification Code",
+        html: `Your verification code is: ${verificationCode}`,
+      });
+
+      return NextResponse.json({
+        message: "Verification code sent",
+        exists: userExists,
+      });
     } finally {
       client.release();
     }

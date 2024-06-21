@@ -29,8 +29,8 @@ const LoginModal: React.FC<LoginModalProps> = ({
   const [name, setName] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [showEmailInput, setShowEmailInput] = useState(false);
-  const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [showVerificationInput, setShowVerificationInput] = useState(false);
+  const [showNamePasswordInput, setShowNamePasswordInput] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -70,14 +70,9 @@ const LoginModal: React.FC<LoginModalProps> = ({
       const data = await response.json();
 
       if (response.ok) {
-        if (data.exists) {
-          setIsNewUser(false);
-          setShowVerificationInput(true);
-          toast.success("A verification code has been sent to your email.");
-        } else {
-          setIsNewUser(true);
-          setShowPasswordInput(true);
-        }
+        setShowVerificationInput(true);
+        setIsNewUser(!data.exists);
+        toast.success("A verification code has been sent to your email.");
       } else {
         toast.error(data.message || "An error occurred. Please try again.");
       }
@@ -105,7 +100,12 @@ const LoginModal: React.FC<LoginModalProps> = ({
       const data = await response.json();
 
       if (response.ok) {
-        router.push("/m/callback/email?token=" + data.token);
+        if (isNewUser) {
+          setShowNamePasswordInput(true);
+          setShowVerificationInput(false);
+        } else {
+          router.push("/m/callback/email?token=" + data.token);
+        }
       } else {
         toast.error(
           data.message || "Invalid verification code. Please try again.",
@@ -170,11 +170,11 @@ const LoginModal: React.FC<LoginModalProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md max-h-[90vh] overflow-y-auto flex flex-col items-center justify-center relative"
+            className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md h-screen flex flex-col items-center justify-center relative"
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
+              className="absolute top-10 right-6 text-gray-500 hover:text-gray-700 transition-colors"
             >
               <X className="h-6 w-6" />
             </button>
@@ -221,13 +221,14 @@ const LoginModal: React.FC<LoginModalProps> = ({
                   exit={{ opacity: 0, y: -20 }}
                   className="space-y-4 w-full"
                 >
-                  <h3 className="text-xl font-serif font-semibold text-center">
+                  <h3 className="text-xl font-serif font-semibold">
                     Check your inbox
                   </h3>
-                  <p className="text-gray-600 text-sm mb-4 text-center">
-                    Enter the code we sent to {email} to sign in.
+                  <p className="text-gray-600 text-sm mb-4">
+                    Enter the code we sent to {email} to{" "}
+                    {isNewUser ? "sign up" : "sign in"}.
                   </p>
-                  
+
                   <Input
                     id="verification"
                     type="text"
@@ -243,7 +244,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
                     Verify
                   </Button>
                 </motion.div>
-              ) : showPasswordInput ? (
+              ) : showNamePasswordInput ? (
                 <motion.div
                   key="signup"
                   initial={{ opacity: 0, y: 20 }}
@@ -251,7 +252,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
                   exit={{ opacity: 0, y: -20 }}
                   className="space-y-4 w-full"
                 >
-                  <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
                     type="text"
@@ -260,7 +260,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
                     onChange={(e) => setName(e.target.value)}
                     className="py-6 text-lg"
                   />
-                  <Label htmlFor="password">Create Password</Label>
+
                   <div className="relative">
                     <Input
                       id="password"
@@ -293,7 +293,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
                   exit={{ opacity: 0, y: -20 }}
                   className="space-y-4 w-full"
                 >
-                  <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -319,13 +318,15 @@ const LoginModal: React.FC<LoginModalProps> = ({
               )}
             </AnimatePresence>
             <div className="mt-6 text-center text-sm text-gray-500">
-              Already have an account?{" "}
+              {showEmailInput
+                ? "Already have an account? "
+                : "Don't have an account? "}
               <button className="text-green-600 hover:underline font-semibold">
-                Sign in
+                {showEmailInput ? "Sign in" : "Sign up"}
               </button>
             </div>
             <div className="mt-4 text-center text-xs text-gray-500">
-              By clicking "Sign up", you agree to our{" "}
+              By clicking "Continue", you agree to our{" "}
               <a href="#" className="underline">
                 Terms of Service
               </a>{" "}
